@@ -6,15 +6,15 @@ import {
   FileText,
   MessageSquare,
   Languages,
-  Shield,
+  Upload,
   ChevronRight,
   CheckCircle,
-  AlertTriangle,
-  Star,
-  Upload,
+  Shield,
   Zap,
   Lock,
   ArrowRight,
+  AlertTriangle,
+  Star,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -22,85 +22,87 @@ const FEATURES = [
   {
     icon: FileText,
     title: "Understand Documents",
-    description:
-      "Upload any legal document — rental agreement, employment contract, legal notice — and get a plain-language explanation anyone can understand.",
-    color: "from-violet-500/20 to-purple-500/10",
-    border: "border-violet-500/20",
-    iconColor: "text-violet-400",
+    description: "Upload a rental agreement, employment contract, or legal notice and receive a plain-language explanation of every clause.",
+    iconBg: "bg-[#EFF4FF]",
+    iconColor: "text-[#1E3A5F]",
+    border: "border-[#C7D7F5]",
   },
   {
     icon: MessageSquare,
     title: "Ask Questions",
-    description:
-      'Ask questions about your document in plain language. Get answers grounded in what the document actually says — with page citations.',
-    color: "from-blue-500/20 to-cyan-500/10",
-    border: "border-blue-500/20",
-    iconColor: "text-blue-400",
+    description: "Ask questions about your document in plain language. Every answer is grounded in what the document actually says, with page citations.",
+    iconBg: "bg-[#FBF3DC]",
+    iconColor: "text-[#A67C3A]",
+    border: "border-[#E8C97A]",
   },
   {
     icon: Languages,
     title: "Translate to Hindi",
-    description:
-      "Translate your document or its explanation between English and Hindi. Choose between legal precision or simple language.",
-    color: "from-emerald-500/20 to-teal-500/10",
-    border: "border-emerald-500/20",
-    iconColor: "text-emerald-400",
+    description: "Translate your document or its explanation between English and Hindi. Choose legal precision or everyday simple language.",
+    iconBg: "bg-[#D1FAE5]",
+    iconColor: "text-[#0F7653]",
+    border: "border-[#A7F3D0]",
   },
   {
     icon: Scale,
     title: "Create Legal Drafts",
-    description:
-      "Describe your situation and generate a draft legal response, demand letter, or agreement — guided step by step.",
-    color: "from-amber-500/20 to-orange-500/10",
-    border: "border-amber-500/20",
-    iconColor: "text-amber-400",
+    description: "Describe your situation step by step and generate a draft legal response, demand letter, or agreement — then download as PDF.",
+    iconBg: "bg-[#FEF3C7]",
+    iconColor: "text-[#B45309]",
+    border: "border-[#FDE68A]",
   },
 ];
 
 const HOW_IT_WORKS = [
-  { step: "01", title: "Upload your document", desc: "PDF, Word document, or photo of a document" },
-  { step: "02", title: "We analyze it", desc: "AI extracts key information, dates, obligations, and risks" },
-  { step: "03", title: "Read in plain language", desc: "See what it means, who is involved, and what you need to do" },
-  { step: "04", title: "Ask questions", desc: "Get grounded answers with citations to the original document" },
+  { step: "01", title: "Upload your document", desc: "PDF, Word document, or photo of a document — any format works" },
+  { step: "02", title: "We analyze it", desc: "AI extracts key information, parties, dates, obligations, and risks" },
+  { step: "03", title: "Read in plain language", desc: "See what it means, who is involved, what you owe, and what to watch out for" },
+  { step: "04", title: "Ask questions", desc: "Get grounded answers with citations to the exact page in your document" },
 ];
 
 const TRUST_SIGNALS = [
   { icon: Lock, text: "Your documents are private and secure" },
-  { icon: Shield, text: "We never use your documents to train AI" },
+  { icon: Shield, text: "Never used to train AI models" },
   { icon: CheckCircle, text: "Answers grounded in your actual document" },
-  { icon: Zap, text: "Fast — results in seconds" },
+  { icon: Zap, text: "Results in seconds" },
 ];
 
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handler);
-    return () => window.removeEventListener("scroll", handler);
+    const h = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", h);
+    return () => window.removeEventListener("scroll", h);
   }, []);
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "glass border-b border-white/5" : "bg-transparent"
+        scrolled ? "navbar shadow-sm" : "bg-transparent"
       }`}
     >
       <div className="content-container">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center">
+          {/* Logo */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#1E3A5F] flex items-center justify-center">
               <Scale className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-lg text-white">LegalSaathi</span>
+            <div>
+              <span className="font-bold text-[17px] text-[#0F1B2D] tracking-tight">LegalSaathi</span>
+            </div>
           </div>
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="#features" className="btn-ghost">Features</Link>
-            <Link href="#how-it-works" className="btn-ghost">How it works</Link>
-            <Link href="/dashboard" className="btn-secondary text-sm py-2 px-5">
-              Go to App
+
+          {/* Nav links */}
+          <div className="hidden md:flex items-center gap-1">
+            <Link href="#features" className="btn-ghost text-sm">Features</Link>
+            <Link href="#how-it-works" className="btn-ghost text-sm">How it works</Link>
+            <div className="w-px h-5 bg-[#DDD0BC] mx-2" />
+            <Link href="/dashboard" className="btn-primary text-sm py-2 px-5">
+              Open App
             </Link>
           </div>
-          <Link href="/dashboard" className="md:hidden btn-secondary text-sm py-2 px-4">
+          <Link href="/dashboard" className="md:hidden btn-primary text-sm py-2 px-4">
             Open App
           </Link>
         </div>
@@ -109,113 +111,112 @@ function Navbar() {
   );
 }
 
-function DisclaimerBanner() {
-  return (
-    <div className="disclaimer-box mx-4 mt-20 mb-0 max-w-4xl mx-auto">
-      <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-      <p>
-        <strong className="text-amber-400">Important:</strong> LegalSaathi provides AI-generated legal information and document assistance for informational purposes only. It is not a substitute for advice from a qualified lawyer. For urgent or high-stakes matters, consult a qualified advocate or appropriate legal-aid service.
-      </p>
-    </div>
-  );
-}
-
 export default function LandingPage() {
   return (
     <div className="page-container">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="hero-bg pt-24 pb-20 relative overflow-hidden">
-        {/* Background decorations */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-1/4 w-72 h-72 bg-violet-600/10 rounded-full blur-3xl" />
-          <div className="absolute top-40 right-1/4 w-96 h-96 bg-blue-600/8 rounded-full blur-3xl" />
-          <div className="absolute -bottom-20 left-1/2 w-64 h-64 bg-emerald-600/8 rounded-full blur-3xl" />
+      {/* ─── HERO ─── */}
+      <section className="hero-bg hero-pattern pt-24 pb-16 relative overflow-hidden">
+        {/* Decorative lines */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-b from-transparent to-[#C8B99A]/30" />
+          <div className="absolute bottom-0 right-12 w-48 h-48 rounded-full border border-[#DDD0BC]/40" />
+          <div className="absolute bottom-8 right-20 w-28 h-28 rounded-full border border-[#C8B99A]/30" />
         </div>
 
         <div className="content-container relative">
-          <DisclaimerBanner />
+          {/* Disclaimer banner */}
+          <div className="max-w-4xl mx-auto mb-10">
+            <div className="disclaimer-box text-xs">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <p>
+                <strong>Important:</strong> LegalSaathi provides AI-generated legal information for informational purposes only. It is not a substitute for advice from a qualified lawyer. For urgent matters, consult a qualified advocate.
+              </p>
+            </div>
+          </div>
 
-          <div className="text-center mt-12 mb-16 fade-in-up">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full mb-8 border border-violet-500/20">
-              <Zap className="w-3.5 h-3.5 text-violet-400" />
-              <span className="text-sm text-slate-300 font-medium">AI-Powered Legal Assistance for India</span>
-              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+          {/* Headline */}
+          <div className="text-center max-w-4xl mx-auto fade-in-up">
+            <div className="inline-flex items-center gap-2 bg-[#FBF3DC] border border-[#E8C97A] px-4 py-2 rounded-full mb-8">
+              <Star className="w-3.5 h-3.5 text-[#A67C3A] fill-[#A67C3A]" />
+              <span className="text-sm text-[#A67C3A] font-semibold">AI-Powered Legal Assistance for India</span>
             </div>
 
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-4xl md:text-6xl font-bold text-[#0F1B2D] mb-5 leading-[1.12] tracking-tight">
               Understand Your{" "}
-              <span className="gradient-text">Legal Documents.</span>
-              <br className="hidden md:block" />
-              <span className="text-slate-200"> In Simple Language.</span>
+              <span className="gradient-text-gold">Legal Documents.</span>
+              <br />
+              <span className="text-[#374151]">In Simple Language.</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-              Upload a legal document, understand what it means, ask questions, translate it, and create useful legal drafts —
-              without needing to understand complicated legal language.
+            <p className="text-lg text-[#6B7280] max-w-2xl mx-auto mb-10 leading-relaxed">
+              Upload a legal document, understand what it means, ask questions, translate to Hindi, and create useful legal drafts — without needing a law degree.
             </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Link href="/dashboard?action=upload" className="btn-primary text-base px-8 py-3.5">
-                <Upload className="w-5 h-5" />
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Link href="/upload" className="btn-primary text-[15px] px-7 py-3">
+                <Upload className="w-4 h-4" />
                 Understand a Document
               </Link>
-              <Link href="/dashboard?action=create" className="btn-secondary text-base px-8 py-3.5">
-                <FileText className="w-5 h-5" />
-                Create a Legal Document
+              <Link href="/create" className="btn-secondary text-[15px] px-7 py-3">
+                <FileText className="w-4 h-4" />
+                Create a Legal Draft
               </Link>
             </div>
 
-            <div className="flex flex-wrap gap-6 justify-center mt-8">
-              <Link href="/dashboard?action=translate" className="btn-ghost text-sm">
-                <Languages className="w-4 h-4" />
-                Translate
+            <div className="flex flex-wrap gap-4 justify-center mt-5">
+              <Link href="/translate" className="btn-ghost text-sm text-[#6B7280]">
+                <Languages className="w-4 h-4" /> Translate
               </Link>
-              <Link href="/dashboard?action=ask" className="btn-ghost text-sm">
-                <MessageSquare className="w-4 h-4" />
-                Ask a Legal Question
+              <Link href="/chat" className="btn-ghost text-sm text-[#6B7280]">
+                <MessageSquare className="w-4 h-4" /> Ask about a document
               </Link>
             </div>
           </div>
 
-          {/* Hero Card Preview */}
-          <div className="max-w-4xl mx-auto fade-in-up" style={{ animationDelay: "0.2s" }}>
-            <div className="glass-strong p-6 glow-violet">
-              <div className="flex items-center gap-3 mb-4">
+          {/* Hero card */}
+          <div className="max-w-3xl mx-auto mt-14 fade-in-up" style={{ animationDelay: "0.15s" }}>
+            <div className="card p-5 shadow-lg">
+              {/* Window chrome */}
+              <div className="flex items-center gap-2 mb-4">
                 <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-400/70" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-400/70" />
-                  <div className="w-3 h-3 rounded-full bg-green-400/70" />
+                  <div className="w-3 h-3 rounded-full bg-[#FECACA]" />
+                  <div className="w-3 h-3 rounded-full bg-[#FEF08A]" />
+                  <div className="w-3 h-3 rounded-full bg-[#BBF7D0]" />
                 </div>
-                <div className="flex-1 h-7 glass rounded-lg flex items-center px-3">
-                  <span className="text-xs text-slate-500">legalsaathi.in/analyze</span>
+                <div className="flex-1 bg-[#F2EDE0] rounded-md h-6 flex items-center px-3">
+                  <span className="text-xs text-[#9CA3AF]">legalsaathi.in/analyze</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="glass p-4 rounded-xl">
+                <div className="bg-[#F7F2E8] border border-[#EDE4D3] rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <FileText className="w-4 h-4 text-violet-400" />
-                    <span className="text-sm font-semibold text-white">Rental Agreement.pdf</span>
+                    <div className="w-8 h-8 bg-[#EFF4FF] rounded-lg flex items-center justify-center">
+                      <FileText className="w-4 h-4 text-[#1E3A5F]" />
+                    </div>
+                    <span className="text-sm font-semibold text-[#0F1B2D]">Rental Agreement.pdf</span>
                     <span className="badge badge-ready ml-auto">Ready</span>
                   </div>
-                  <p className="text-sm text-slate-400 leading-relaxed">
-                    This is a rental agreement between Rahul Sharma (landlord) and Amit Verma (tenant) for a residential property in Bangalore from January to December 2027.
+                  <p className="text-sm text-[#6B7280] leading-relaxed">
+                    This is a rental agreement between Rahul Sharma (landlord) and Amit Verma (tenant) for a flat in Bangalore from January to December 2027.
                   </p>
                 </div>
+
                 <div className="space-y-2">
                   {[
-                    { label: "Monthly Rent", value: "₹15,000 (due 5th)", icon: "💰" },
-                    { label: "Security Deposit", value: "₹45,000", icon: "🏠" },
-                    { label: "Notice Period", value: "30 days", icon: "📅" },
-                    { label: "Risk Flag", value: "Termination Clause", icon: "⚠️" },
+                    { label: "Monthly Rent", value: "₹15,000 (due 5th)", dot: "bg-[#0F7653]" },
+                    { label: "Security Deposit", value: "₹45,000", dot: "bg-[#1E3A5F]" },
+                    { label: "Notice Period", value: "30 days", dot: "bg-[#A67C3A]" },
+                    { label: "⚠ Risk Flag", value: "Termination clause", dot: "bg-[#C0392B]" },
                   ].map((item) => (
-                    <div key={item.label} className="glass rounded-lg px-3 py-2 flex items-center justify-between">
-                      <span className="text-xs text-slate-400">{item.icon} {item.label}</span>
-                      <span className="text-xs font-semibold text-white">{item.value}</span>
+                    <div key={item.label} className="bg-[#F7F2E8] border border-[#EDE4D3] rounded-lg px-3 py-2.5 flex items-center justify-between">
+                      <span className="text-xs text-[#6B7280] flex items-center gap-2">
+                        <span className={`w-1.5 h-1.5 rounded-full ${item.dot}`} />
+                        {item.label}
+                      </span>
+                      <span className="text-xs font-semibold text-[#0F1B2D]">{item.value}</span>
                     </div>
                   ))}
                 </div>
@@ -225,13 +226,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Trust signals */}
-      <section className="py-12 border-y border-white/5">
+      {/* ─── TRUST SIGNALS ─── */}
+      <section className="py-10 bg-[#F2EDE0] border-y border-[#DDD0BC]">
         <div className="content-container">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {TRUST_SIGNALS.map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-3 text-slate-400">
-                <Icon className="w-5 h-5 text-violet-400 flex-shrink-0" />
+              <div key={text} className="flex items-center gap-3 text-[#6B7280]">
+                <Icon className="w-5 h-5 text-[#A67C3A] flex-shrink-0" />
                 <span className="text-sm">{text}</span>
               </div>
             ))}
@@ -239,32 +240,29 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="py-24">
+      {/* ─── FEATURES ─── */}
+      <section id="features" className="py-24 bg-[#FDFAF5]">
         <div className="content-container">
-          <div className="text-center mb-16">
+          <div className="text-center mb-14">
             <p className="section-label mb-3">What you can do</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#0F1B2D] mb-4">
               Everything you need to understand your legal situation
             </h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">
-              Four powerful tools to help you navigate legal documents without a law degree.
+            <p className="text-[#6B7280] max-w-xl mx-auto">
+              Four tools that work together to help you navigate legal documents without a law degree.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {FEATURES.map(({ icon: Icon, title, description, color, border, iconColor }) => (
-              <div
-                key={title}
-                className={`glass card-hover p-6 border ${border} bg-gradient-to-br ${color}`}
-              >
-                <div className={`w-12 h-12 rounded-xl glass flex items-center justify-center mb-4 ${iconColor}`}>
-                  <Icon className="w-6 h-6" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {FEATURES.map(({ icon: Icon, title, description, iconBg, iconColor, border }) => (
+              <div key={title} className={`card card-hover p-6 border ${border}`}>
+                <div className={`w-11 h-11 rounded-xl ${iconBg} flex items-center justify-center mb-4 ${iconColor}`}>
+                  <Icon className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
-                <p className="text-slate-400 leading-relaxed">{description}</p>
-                <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-violet-400 mt-4 hover:text-violet-300 transition-colors">
-                  Try it <ChevronRight className="w-4 h-4" />
+                <h3 className="text-lg font-bold text-[#0F1B2D] mb-2">{title}</h3>
+                <p className="text-[#6B7280] text-sm leading-relaxed">{description}</p>
+                <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-[#A67C3A] mt-4 font-medium hover:text-[#C4943A] transition-colors">
+                  Try it <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             ))}
@@ -272,62 +270,67 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How it works */}
-      <section id="how-it-works" className="py-24 border-t border-white/5">
+      {/* ─── HOW IT WORKS ─── */}
+      <section id="how-it-works" className="py-24 bg-[#F7F2E8] border-t border-[#DDD0BC]">
         <div className="content-container">
-          <div className="text-center mb-16">
+          <div className="text-center mb-14">
             <p className="section-label mb-3">Simple process</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#0F1B2D] mb-4">
               From confusing document to clear understanding
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+            {/* Connecting line */}
+            <div className="hidden md:block absolute top-7 left-[12%] right-[12%] h-px bg-[#DDD0BC]" />
+
             {HOW_IT_WORKS.map(({ step, title, desc }, i) => (
               <div key={step} className="relative">
-                {i < HOW_IT_WORKS.length - 1 && (
-                  <div className="hidden md:block absolute top-6 left-full w-full h-px bg-gradient-to-r from-violet-500/30 to-transparent z-0" />
-                )}
-                <div className="text-6xl font-black gradient-text opacity-30 mb-4">{step}</div>
-                <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
+                <div className="w-14 h-14 rounded-full bg-[#FDFAF5] border-2 border-[#DDD0BC] flex items-center justify-center mb-5 relative z-10">
+                  <span className="text-lg font-black text-[#C4943A]">{step}</span>
+                </div>
+                <h3 className="text-base font-bold text-[#0F1B2D] mb-2">{title}</h3>
+                <p className="text-[#6B7280] text-sm leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 border-t border-white/5">
-        <div className="content-container text-center">
-          <div className="glass-strong max-w-3xl mx-auto p-12 glow-violet">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Don&apos;t let complicated language confuse you
+      {/* ─── CTA ─── */}
+      <section className="py-24 bg-[#FDFAF5]">
+        <div className="content-container">
+          <div className="max-w-2xl mx-auto text-center card p-12 border-[#DDD0BC]">
+            <div className="w-14 h-14 bg-[#1E3A5F] rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Scale className="w-7 h-7 text-white" />
+            </div>
+            <h2 className="text-3xl font-bold text-[#0F1B2D] mb-4">
+              Don't let legal language confuse you
             </h2>
-            <p className="text-slate-400 mb-8 text-lg">
+            <p className="text-[#6B7280] mb-8 leading-relaxed">
               Start understanding your documents in minutes. No legal background required.
             </p>
-            <Link href="/dashboard" className="btn-primary text-base px-10 py-4">
-              Get started — it&apos;s free <ArrowRight className="w-5 h-5" />
+            <Link href="/dashboard" className="btn-primary text-[15px] px-9 py-3.5">
+              Get started <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-12">
+      {/* ─── FOOTER ─── */}
+      <footer className="border-t border-[#DDD0BC] py-10 bg-[#F2EDE0]">
         <div className="content-container">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-[#1E3A5F] flex items-center justify-center">
                 <Scale className="w-3.5 h-3.5 text-white" />
               </div>
-              <span className="font-bold text-white">LegalSaathi</span>
+              <span className="font-bold text-[#0F1B2D]">LegalSaathi</span>
             </div>
-            <p className="text-sm text-slate-500 text-center max-w-xl">
-              This platform provides AI-generated legal information for informational purposes only. It is not a substitute for advice from a qualified lawyer. Laws and procedures can vary by jurisdiction and circumstances.
+            <p className="text-xs text-[#9CA3AF] text-center max-w-lg">
+              AI-generated legal information for informational purposes only. Not a substitute for advice from a qualified lawyer. Laws vary by jurisdiction and circumstances.
             </p>
-            <p className="text-sm text-slate-600">© 2027 LegalSaathi</p>
+            <p className="text-xs text-[#9CA3AF]">© 2027 LegalSaathi</p>
           </div>
         </div>
       </footer>
