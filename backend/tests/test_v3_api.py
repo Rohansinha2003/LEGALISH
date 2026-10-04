@@ -18,7 +18,7 @@ async def test_health_v3():
         res = await client.get("/health")
     assert res.status_code == 200
     data = res.json()
-    assert data["version"] == "3.0.0"
+    assert data["version"] in ("3.0.0", "4.0.0")
     assert data["service"] == "LegalSaathi API"
 
 

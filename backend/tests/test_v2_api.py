@@ -16,7 +16,7 @@ async def test_health_v2():
         res = await client.get("/health")
     assert res.status_code == 200
     data = res.json()
-    assert data["version"] in ("2.0.0", "3.0.0")
+    assert data["version"] in ("2.0.0", "3.0.0", "4.0.0")
 
 
 async def test_create_case_wizard():

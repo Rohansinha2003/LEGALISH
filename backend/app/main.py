@@ -16,6 +16,17 @@ from app.api.v3 import guidance as guidance_v3
 from app.api.v3 import lawyers as lawyers_v3
 from app.api.v3 import billing as billing_v3
 from app.api.v3 import privacy as privacy_v3
+from app.api.v4 import graph as graph_v4
+from app.api.v4 import temporal as temporal_v4
+from app.api.v4 import caselaw as caselaw_v4
+from app.api.v4 import research as research_v4
+from app.api.v4 import documents as documents_v4
+from app.api.v4 import workflows as workflows_v4
+from app.api.v4 import workspaces as workspaces_v4
+from app.api.v4 import court as court_v4
+from app.api.v4 import accessibility as accessibility_v4
+from app.api.v4 import evaluation as evaluation_v4
+from app.api.v4 import webhooks as webhooks_v4
 
 settings = get_settings()
 setup_logging()
@@ -36,8 +47,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="LegalSaathi API",
-    description="Multilingual Indian Legal Assistance Platform (V2)",
-    version="2.0.0",
+    description="Scalable Indian Legal Intelligence & Access Platform (V4)",
+    version="4.0.0",
     lifespan=lifespan,
     docs_url="/docs" if settings.is_development else None,
     redoc_url="/redoc" if settings.is_development else None,
@@ -89,14 +100,27 @@ app.include_router(intelligence_v3.router, prefix="/api/v3", tags=["Case Intelli
 app.include_router(guidance_v3.router, prefix="/api/v3", tags=["Legal Aid & Guidance (v3)"])
 app.include_router(lawyers_v3.router, prefix="/api/v3/lawyers", tags=["Lawyer Marketplace (v3)"])
 app.include_router(billing_v3.router, prefix="/api/v3/billing", tags=["Billing & Organizations (v3)"])
-app.include_router(privacy_v3.router, prefix="/api/v3", tags=["Privacy & Notifications (v3)"])
+app.include_router(privacy_v3.router, prefix="/api/v3/privacy", tags=["Privacy & Notifications (v3)"])
+
+# V4 Routes (Legal Intelligence, Precedents, Workflows, Workspaces, Accessibility, Evaluation)
+app.include_router(graph_v4.router, prefix="/api/v4/knowledge-graph", tags=["Knowledge Graph (v4)"])
+app.include_router(temporal_v4.router, prefix="/api/v4/temporal", tags=["Temporal Reasoning (v4)"])
+app.include_router(caselaw_v4.router, prefix="/api/v4/caselaw", tags=["Case-Law & Precedents (v4)"])
+app.include_router(research_v4.router, prefix="/api/v4/research", tags=["Research & Citations (v4)"])
+app.include_router(documents_v4.router, prefix="/api/v4/documents", tags=["Document Intelligence (v4)"])
+app.include_router(workflows_v4.router, prefix="/api/v4/workflows", tags=["Workflows & Approval Gates (v4)"])
+app.include_router(workspaces_v4.router, prefix="/api/v4/workspaces", tags=["Professional Workspaces (v4)"])
+app.include_router(court_v4.router, prefix="/api/v4/court", tags=["Court Process Assistant (v4)"])
+app.include_router(accessibility_v4.router, prefix="/api/v4/accessibility", tags=["Accessibility & Voice (v4)"])
+app.include_router(evaluation_v4.router, prefix="/api/v4/evaluation", tags=["Evaluation & Benchmarks (v4)"])
+app.include_router(webhooks_v4.router, prefix="/api/v4/webhooks", tags=["Webhooks & Events (v4)"])
 
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "LegalSaathi API", "version": "3.0.0"}
+    return {"status": "ok", "service": "LegalSaathi API", "version": "4.0.0"}
 
 
 @app.get("/ready")
 async def ready():
-    return {"status": "ready", "service": "LegalSaathi API", "version": "3.0.0"}
+    return {"status": "ready", "service": "LegalSaathi API", "version": "4.0.0"}

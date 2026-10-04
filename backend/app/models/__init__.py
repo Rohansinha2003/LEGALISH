@@ -691,3 +691,217 @@ class AgentRun(Base):
     tokens_consumed = Column(Integer, default=0)
     latency_ms = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+# --- V4 Domain Models ---
+
+class LegalEntity(Base):
+    __tablename__ = "legal_entities"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_type = Column(String(50), nullable=False, index=True)  # act, section, rule, judgment, court, judge, concept
+    canonical_name = Column(String(500), nullable=False)
+    identifier = Column(String(255), unique=True, index=True)
+    jurisdiction = Column(String(100), default="India")
+    metadata_ = Column("metadata", JSON, default=dict)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class LegalRelationship(Base):
+    __tablename__ = "legal_relationships"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    source_entity_id = Column(UUID(as_uuid=True), ForeignKey("legal_entities.id", ondelete="CASCADE"), nullable=False, index=True)
+    target_entity_id = Column(UUID(as_uuid=True), ForeignKey("legal_entities.id", ondelete="CASCADE"), nullable=False, index=True)
+    relationship_type = Column(String(100), nullable=False, index=True)  # belongs_to, interprets, follows, distinguishes, overrules, amends
+    statutory_reference = Column(Text)
+    confidence = Column(Numeric(3, 2), default=1.0)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class StatuteVersion(Base):
+    __tablename__ = "statute_versions"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("legal_entities.id", ondelete="CASCADE"), nullable=False)
+    version_label = Column(String(100), nullable=False)
+    effective_from = Column(Date, nullable=False)
+    effective_to = Column(Date, nullable=True)
+    is_current = Column(Boolean, default=False)
+    amendment_act = Column(String(255))
+    full_text = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class Judgment(Base):
+    __tablename__ = "judgments"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_name = Column(String(500), nullable=False)
+    neutral_citation = Column(String(255), index=True)
+    court_name = Column(String(255), nullable=False, index=True)
+    decision_date = Column(Date, nullable=False, index=True)
+    bench = Column(String(255))
+    facts = Column(Text)
+    issues = Column(Text)
+    arguments_appellant = Column(Text)
+    arguments_respondent = Column(Text)
+    ratio_decidendi = Column(Text)
+    outcome = Column(String(100))
+    headnote = Column(Text)
+    statutory_provisions = Column(JSON, default=list)
+    source_url = Column(Text)
+    verified = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class LegalCitationCatalog(Base):
+    __tablename__ = "legal_citations_catalog"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    citation_text = Column(String(255), unique=True, nullable=False, index=True)
+    source_type = Column(String(50), nullable=False)
+    source_id = Column(UUID(as_uuid=True))
+    is_verified = Column(Boolean, default=True)
+    verification_source = Column(String(255))
+    verified_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class ResearchCollection(Base):
+    __tablename__ = "research_collections"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="SET NULL"), nullable=True)
+    title = Column(String(255), nullable=False)
+    description = Column(Text)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class ResearchItem(Base):
+    __tablename__ = "research_items"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    collection_id = Column(UUID(as_uuid=True), ForeignKey("research_collections.id", ondelete="CASCADE"), nullable=False)
+    entity_type = Column(String(50), nullable=False)
+    entity_id = Column(UUID(as_uuid=True))
+    title = Column(String(255), nullable=False)
+    citation = Column(String(255))
+    snippet = Column(Text)
+    user_notes = Column(Text)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class DocumentObligation(Base):
+    __tablename__ = "document_obligations"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="CASCADE"), nullable=False, index=True)
+    document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id", ondelete="SET NULL"), nullable=True)
+    obligor = Column(String(255), nullable=False)
+    obligee = Column(String(255))
+    obligation_text = Column(Text, nullable=False)
+    obligation_type = Column(String(50), default="general")
+    amount_inr = Column(Numeric(12, 2))
+    frequency = Column(String(50))
+    due_date = Column(Date)
+    source_clause = Column(String(255))
+    status = Column(String(50), default="pending")
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class WorkflowDefinition(Base):
+    __tablename__ = "workflow_definitions"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(255), nullable=False)
+    category = Column(String(100), nullable=False)
+    trigger_type = Column(String(100), nullable=False)
+    definition = Column(JSON, nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class WorkflowExecution(Base):
+    __tablename__ = "workflow_executions"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    workflow_id = Column(UUID(as_uuid=True), ForeignKey("workflow_definitions.id", ondelete="CASCADE"), nullable=False)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="CASCADE"), nullable=False)
+    current_step = Column(Integer, default=1)
+    status = Column(String(50), default="in_progress")
+    execution_state = Column(JSON, default=dict)
+    requires_human_approval = Column(Boolean, default=False)
+    approval_details = Column(JSON)
+    approved_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    approved_at = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class LawyerDocumentReview(Base):
+    __tablename__ = "lawyer_document_reviews"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    consultation_id = Column(UUID(as_uuid=True), ForeignKey("consultations.id", ondelete="CASCADE"), nullable=False)
+    document_id = Column(UUID(as_uuid=True), ForeignKey("generated_documents.id", ondelete="CASCADE"), nullable=False)
+    lawyer_id = Column(UUID(as_uuid=True), ForeignKey("lawyers.id", ondelete="CASCADE"), nullable=False)
+    review_status = Column(String(50), default="lawyer_edited")  # lawyer_edited, lawyer_approved, final
+    correction_notes = Column(Text)
+    verified_clauses = Column(JSON, default=list)
+    signed_approval_hash = Column(String(255))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class LawyerAIFeedback(Base):
+    __tablename__ = "lawyer_ai_feedback"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lawyer_id = Column(UUID(as_uuid=True), ForeignKey("lawyers.id", ondelete="CASCADE"), nullable=False)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="SET NULL"))
+    ai_output_type = Column(String(100), nullable=False)
+    original_ai_text = Column(Text, nullable=False)
+    corrected_text = Column(Text, nullable=False)
+    correction_reason = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class OrganizationKnowledgeDocument(Base):
+    __tablename__ = "organization_knowledge_documents"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    doc_type = Column(String(50), nullable=False)
+    content = Column(Text, nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class WebhookSubscription(Base):
+    __tablename__ = "webhook_subscriptions"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"))
+    target_url = Column(Text, nullable=False)
+    secret_key = Column(String(255), nullable=False)
+    subscribed_events = Column(JSON, default=list)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class WebhookDelivery(Base):
+    __tablename__ = "webhook_deliveries"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    subscription_id = Column(UUID(as_uuid=True), ForeignKey("webhook_subscriptions.id", ondelete="CASCADE"), nullable=False)
+    event_type = Column(String(100), nullable=False)
+    payload = Column(JSON, nullable=False)
+    response_status = Column(Integer)
+    delivered_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class EvaluationBenchmarkRun(Base):
+    __tablename__ = "evaluation_benchmark_runs"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    benchmark_name = Column(String(100), nullable=False)
+    model_version = Column(String(100), nullable=False)
+    metrics = Column(JSON, nullable=False)
+    pass_rate = Column(Numeric(5, 2), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class HumanExpertEvaluation(Base):
+    __tablename__ = "human_expert_evaluations"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    expert_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    prompt = Column(Text, nullable=False)
+    ai_response = Column(Text, nullable=False)
+    rating = Column(String(50), nullable=False)
+    feedback_notes = Column(Text)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+

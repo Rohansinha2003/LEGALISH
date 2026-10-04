@@ -67,12 +67,14 @@ export function Navbar() {
 
   const navLinks = [
     { href: "/dashboard", label: "Dashboard", icon: Briefcase },
+    { href: "/caselaw", label: "Case-Law", icon: Scale },
+    { href: "/easy-help", label: "Easy Help", icon: Sparkles },
     { href: "/compare", label: "Redline", icon: GitCompare },
-    { href: "/lawyers", label: "Lawyers", icon: UserCheck },
-    { href: "/legal-aid", label: "Legal Aid", icon: HeartHandshake },
+    { href: "/lawyer-workspace", label: "Lawyer Portal", icon: UserCheck },
+    { href: "/ngo", label: "NGO Clinic", icon: HeartHandshake },
     { href: "/procedures", label: "Procedures", icon: BookOpen },
     { href: "/pricing", label: "Plans", icon: CreditCard },
-    { href: "/privacy", label: "DPDP Privacy", icon: Lock },
+    { href: "/privacy", label: "DPDP", icon: Lock },
     { href: "/admin", label: "Admin", icon: Shield },
   ];
 
@@ -88,9 +90,9 @@ export function Navbar() {
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-serif text-lg font-bold text-[#1A2B49] tracking-tight">LegalSaathi</span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#E6C687]/30 text-[#8C6D23] uppercase tracking-wider">V3</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#E6C687]/30 text-[#8C6D23] uppercase tracking-wider">V4</span>
               </div>
-              <p className="text-[10px] text-[#706E6B] leading-none hidden sm:block">Digital Legal Access Platform</p>
+              <p className="text-[10px] text-[#706E6B] leading-none hidden sm:block">Legal Intelligence Platform</p>
             </div>
           </Link>
 
