@@ -196,6 +196,23 @@ class LegalResearchService:
                 "next_practical_steps": ["Review contract terms", "Consult an advocate if formal dispute persists"]
             }
 
+    async def search_legal_sources(self, query: str, state: str | None = None, top_k: int = 3) -> dict:
+        jurisdiction = state or "India"
+        chunks = self.retrieve_statutory_chunks(query, jurisdiction=jurisdiction)
+        return {
+            "results": [
+                {
+                    "source_title": c["title"],
+                    "section": c["section"],
+                    "authority": c["authority"],
+                    "excerpt": c["text"],
+                    "url": c["url"],
+                    "verified": True,
+                }
+                for c in chunks[:top_k]
+            ]
+        }
+
 
 _legal_research_service: LegalResearchService | None = None
 

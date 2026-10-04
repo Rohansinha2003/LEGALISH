@@ -10,6 +10,12 @@ from app.api.v2 import generation as generate_v2
 from app.api.v2 import translate as translate_v2
 from app.api.v2 import search as search_v2
 from app.api.v2 import admin as admin_v2
+from app.api.v3 import orchestrator as orchestrator_v3
+from app.api.v3 import intelligence as intelligence_v3
+from app.api.v3 import guidance as guidance_v3
+from app.api.v3 import lawyers as lawyers_v3
+from app.api.v3 import billing as billing_v3
+from app.api.v3 import privacy as privacy_v3
 
 settings = get_settings()
 setup_logging()
@@ -18,7 +24,7 @@ logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("legalsaathi_starting", environment=settings.ENVIRONMENT, version="2.0.0")
+    logger.info("legalsaathi_starting", environment=settings.ENVIRONMENT, version="3.0.0")
     try:
         from app.core.database import init_db
         await init_db()
@@ -77,7 +83,20 @@ app.include_router(translate_v2.router, prefix="/api/v2/translate", tags=["Multi
 app.include_router(search_v2.router, prefix="/api/v2/search", tags=["Global Search (v2)"])
 app.include_router(admin_v2.router, prefix="/api/v2/admin", tags=["Admin & Observability (v2)"])
 
+# V3 Routes (Multi-Agent Orchestrator, Case Intelligence, Legal Aid, Lawyers, Billing, Privacy)
+app.include_router(orchestrator_v3.router, prefix="/api/v3/orchestrator", tags=["Multi-Agent Orchestrator (v3)"])
+app.include_router(intelligence_v3.router, prefix="/api/v3", tags=["Case Intelligence & Redlines (v3)"])
+app.include_router(guidance_v3.router, prefix="/api/v3", tags=["Legal Aid & Guidance (v3)"])
+app.include_router(lawyers_v3.router, prefix="/api/v3/lawyers", tags=["Lawyer Marketplace (v3)"])
+app.include_router(billing_v3.router, prefix="/api/v3/billing", tags=["Billing & Organizations (v3)"])
+app.include_router(privacy_v3.router, prefix="/api/v3", tags=["Privacy & Notifications (v3)"])
+
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "LegalSaathi API", "version": "2.0.0"}
+    return {"status": "ok", "service": "LegalSaathi API", "version": "3.0.0"}
+
+
+@app.get("/ready")
+async def ready():
+    return {"status": "ready", "service": "LegalSaathi API", "version": "3.0.0"}

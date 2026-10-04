@@ -24,6 +24,12 @@ import {
   RefreshCw,
   Search,
   HelpCircle,
+  Cpu,
+  Layers,
+  Scale,
+  CalendarClock,
+  AlertCircle,
+  GitBranch,
 } from "lucide-react";
 import {
   casesApi,
@@ -34,6 +40,13 @@ import {
   ClauseTemplate,
   DocumentReviewResult,
   generationV2Api,
+  orchestratorV3Api,
+  intelligenceV3Api,
+  lawyersV3Api,
+  OrchestratorRunResponse,
+  FactStoreItem,
+  DeadlineItem,
+  ContradictionResult,
 } from "@/lib/api";
 import { VoiceInputButton, ReadAloudButton } from "@/components/VoiceHelper";
 import toast from "react-hot-toast";
@@ -43,7 +56,7 @@ export default function CaseWorkspacePage({ params }: { params: Promise<{ id: st
   const caseId = resolvedParams.id;
 
   const [activeTab, setActiveTab] = useState<
-    "overview" | "timeline" | "evidence" | "documents" | "research" | "drafts" | "lawyer" | "notes"
+    "overview" | "orchestrator" | "facts" | "deadlines" | "timeline" | "evidence" | "documents" | "research" | "drafts" | "lawyer" | "notes"
   >("overview");
 
   const [workspace, setWorkspace] = useState<CaseWorkspace | null>(null);
@@ -83,6 +96,29 @@ export default function CaseWorkspacePage({ params }: { params: Promise<{ id: st
   // New Note state
   const [noteContent, setNoteContent] = useState("");
 
+  // V3 Orchestrator state
+  const [orchestratorRun, setOrchestratorRun] = useState<OrchestratorRunResponse | null>(null);
+  const [orchestratorLoading, setOrchestratorLoading] = useState(false);
+  const [orchestratorQuery, setOrchestratorQuery] = useState("");
+  const [orchestratorLang, setOrchestratorLang] = useState("en");
+
+  // V3 Facts state
+  const [facts, setFacts] = useState<FactStoreItem[]>([]);
+  const [loadingFacts, setLoadingFacts] = useState(false);
+  const [newFactKey, setNewFactKey] = useState("");
+  const [newFactVal, setNewFactVal] = useState("");
+
+  // V3 Deadlines state
+  const [deadlines, setDeadlines] = useState<DeadlineItem[]>([]);
+  const [loadingDeadlines, setLoadingDeadlines] = useState(false);
+  const [newDeadlineTitle, setNewDeadlineTitle] = useState("");
+  const [newDeadlineDate, setNewDeadlineDate] = useState("");
+  const [newDeadlineStatute, setNewDeadlineStatute] = useState("");
+
+  // V3 Contradictions state
+  const [contradictions, setContradictions] = useState<ContradictionResult | null>(null);
+  const [auditingContradictions, setAuditingContradictions] = useState(false);
+
   // Load Workspace Data
   const loadWorkspace = async () => {
     try {
@@ -95,8 +131,113 @@ export default function CaseWorkspacePage({ params }: { params: Promise<{ id: st
     }
   };
 
+  const loadFacts = async () => {
+    setLoadingFacts(true);
+    try {
+      const data = await intelligenceV3Api.getFacts(caseId);
+      setFacts(data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingFacts(false);
+    }
+  };
+
+  const loadDeadlines = async () => {
+    setLoadingDeadlines(true);
+    try {
+      const data = await intelligenceV3Api.getDeadlines(caseId);
+      setDeadlines(data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingDeadlines(false);
+    }
+  };
+
+  const handleRunOrchestrator = async () => {
+    setOrchestratorLoading(true);
+    try {
+      const res = await orchestratorV3Api.run(caseId, {
+        user_goal: orchestratorQuery || undefined,
+        preferred_language: orchestratorLang,
+        clarity_mode: "default",
+      });
+      setOrchestratorRun(res);
+      toast.success("Multi-agent analysis complete!");
+    } catch (err: any) {
+      toast.error(err.message || "Multi-agent orchestration failed.");
+    } finally {
+      setOrchestratorLoading(false);
+    }
+  };
+
+  const handleAddFact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFactKey.trim() || !newFactVal.trim()) return;
+    try {
+      await intelligenceV3Api.addFact(caseId, {
+        fact_key: newFactKey.trim(),
+        fact_value: newFactVal.trim(),
+        source_type: "user",
+      });
+      toast.success("Verified fact added to store!");
+      setNewFactKey("");
+      setNewFactVal("");
+      loadFacts();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add fact.");
+    }
+  };
+
+  const handleAddDeadline = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDeadlineTitle.trim() || !newDeadlineDate) return;
+    try {
+      await intelligenceV3Api.createDeadline(caseId, {
+        title: newDeadlineTitle.trim(),
+        due_date: newDeadlineDate,
+        statutory_basis: newDeadlineStatute.trim() || undefined,
+      });
+      toast.success("Statutory deadline registered!");
+      setNewDeadlineTitle("");
+      setNewDeadlineDate("");
+      setNewDeadlineStatute("");
+      loadDeadlines();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create deadline.");
+    }
+  };
+
+  const handleToggleDeadline = async (deadlineId: string, currentStatus: boolean) => {
+    try {
+      await intelligenceV3Api.updateDeadline(caseId, deadlineId, {
+        is_completed: !currentStatus,
+      });
+      toast.success("Deadline status updated!");
+      loadDeadlines();
+    } catch (err: any) {
+      toast.error("Failed to update deadline.");
+    }
+  };
+
+  const handleAuditContradictions = async () => {
+    setAuditingContradictions(true);
+    try {
+      const res = await intelligenceV3Api.getContradictions(caseId);
+      setContradictions(res);
+      toast.success("Neutral discrepancy audit complete!");
+    } catch (err: any) {
+      toast.error(err.message || "Audit failed.");
+    } finally {
+      setAuditingContradictions(false);
+    }
+  };
+
   useEffect(() => {
     loadWorkspace();
+    loadFacts();
+    loadDeadlines();
   }, [caseId]);
 
   // Evidence AI Handler
@@ -301,6 +442,9 @@ export default function CaseWorkspacePage({ params }: { params: Promise<{ id: st
         <div className="flex items-center gap-1 border-b border-[#F2ECE3] overflow-x-auto pt-2 scrollbar-none">
           {[
             { id: "overview", label: "Overview", icon: Briefcase },
+            { id: "orchestrator", label: "Multi-Agent AI", icon: Cpu, badge: "V3" },
+            { id: "facts", label: `Fact Store (${facts.length})`, icon: CheckCircle2 },
+            { id: "deadlines", label: `Deadlines (${deadlines.length})`, icon: CalendarClock },
             { id: "timeline", label: `Timeline (${workspace.timeline.length})`, icon: Clock },
             { id: "evidence", label: `Evidence (${workspace.evidence.length})`, icon: Shield },
             { id: "documents", label: `Documents (${workspace.documents.length})`, icon: FileText },
@@ -315,7 +459,7 @@ export default function CaseWorkspacePage({ params }: { params: Promise<{ id: st
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                   active
                     ? "border-[#1A2B49] text-[#1A2B49] font-bold"
                     : "border-transparent text-[#706E6B] hover:text-[#1A2B49] hover:border-[#DDD5C7]"
@@ -323,6 +467,11 @@ export default function CaseWorkspacePage({ params }: { params: Promise<{ id: st
               >
                 <Icon className={`w-3.5 h-3.5 ${active ? "text-[#8C6D23]" : ""}`} />
                 {tab.label}
+                {tab.badge && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-[#E6C687]/40 text-[#8C6D23]">
+                    {tab.badge}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -394,6 +543,466 @@ export default function CaseWorkspacePage({ params }: { params: Promise<{ id: st
                 Go to Evidence Locker →
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* V3 TAB: MULTI-AGENT ORCHESTRATOR */}
+      {activeTab === "orchestrator" && (
+        <div className="space-y-6">
+          <div className="bg-[#FAF7F2] border border-[#E6DFD5] rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E6C687]/30 text-[#8C6D23] mb-2 border border-[#E6C687]/50">
+                  <Cpu className="w-3.5 h-3.5" />
+                  Autonomous Indian Legal Swarm
+                </div>
+                <h2 className="font-serif text-2xl font-bold text-[#1A2B49]">
+                  Multi-Agent Intelligence Supervisor
+                </h2>
+                <p className="text-xs text-[#55524E] mt-1 max-w-2xl leading-relaxed">
+                  Coordinates specialized AI agents (Case Chronology, Legal Risk, Evidence Cross-Check, and Bare Acts RAG) with claim-level hallucination firewalling.
+                </p>
+              </div>
+
+              {/* Agent Swarm Badges */}
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { name: "CaseAgent", desc: "Facts" },
+                  { name: "RiskAgent", desc: "Liabilities" },
+                  { name: "EvidenceAgent", desc: "Cross-Check" },
+                  { name: "ResearchAgent", desc: "Statutes" },
+                  { name: "TranslationAgent", desc: "Plain Language" },
+                ].map((a, i) => (
+                  <span
+                    key={i}
+                    className="px-2.5 py-1 rounded-lg bg-[#F3EDE3] border border-[#E6DFD5] text-[11px] font-mono text-[#1A2B49]"
+                  >
+                    🤖 {a.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Orchestration Query Box */}
+            <div className="pt-2 border-t border-[#EAE2D5] space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <input
+                  type="text"
+                  placeholder="Optional custom inquiry (e.g., assess forfeiture risks, check 15-day notice compliance...)"
+                  value={orchestratorQuery}
+                  onChange={(e) => setOrchestratorQuery(e.target.value)}
+                  className="sm:col-span-3 px-3.5 py-2.5 rounded-xl border border-[#DDD5C7] bg-[#FDFBF7] text-xs text-[#1A2B49] focus:outline-hidden focus:ring-2 focus:ring-[#8C6D23]/30"
+                />
+                <select
+                  value={orchestratorLang}
+                  onChange={(e) => setOrchestratorLang(e.target.value)}
+                  className="px-3.5 py-2.5 rounded-xl border border-[#DDD5C7] bg-[#FDFBF7] text-xs text-[#1A2B49] focus:outline-hidden"
+                >
+                  <option value="en">English (Plain)</option>
+                  <option value="hi">हिंदी (Hindi)</option>
+                  <option value="ta">தமிழ் (Tamil)</option>
+                  <option value="te">తెలుగు (Telugu)</option>
+                  <option value="bn">বাংলা (Bengali)</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={handleRunOrchestrator}
+                  disabled={orchestratorLoading}
+                  className="px-5 py-2.5 rounded-xl bg-[#1A2B49] hover:bg-[#111C30] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-2 disabled:opacity-50"
+                >
+                  {orchestratorLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-[#E6C687]" />
+                      Supervising 5 Agent Swarm...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-[#E6C687]" />
+                      Run Multi-Agent Analysis
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Orchestrator Run Output */}
+          {orchestratorRun && (
+            <div className="space-y-6">
+              {/* Coordinated Answer Card */}
+              <div className="bg-[#FAF7F2] border border-[#E6DFD5] rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#EAE2D5]">
+                  <div className="flex items-center gap-2">
+                    <Scale className="w-5 h-5 text-[#8C6D23]" />
+                    <h3 className="font-serif text-lg font-bold text-[#1A2B49]">
+                      Coordinated Multi-Agent Assessment
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#706E6B]">
+                    Run ID: {orchestratorRun.run_id.slice(0, 8)} • Invoked: {orchestratorRun.agents_invoked.join(", ")}
+                  </span>
+                </div>
+
+                <div className="text-sm text-[#55524E] leading-relaxed whitespace-pre-wrap">
+                  {orchestratorRun.answer}
+                </div>
+              </div>
+
+              {/* Claim Grounding Firewall Badges */}
+              {orchestratorRun.claim_groundings && orchestratorRun.claim_groundings.length > 0 && (
+                <div className="bg-[#FAF7F2] border border-[#E6DFD5] rounded-3xl p-6 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-serif text-base font-bold text-[#1A2B49]">
+                        Claim-Level Hallucination Firewall
+                      </h4>
+                      <p className="text-xs text-[#706E6B]">
+                        Every statement classified by origin to prevent AI confabulation in Indian law.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {orchestratorRun.claim_groundings.map((cg, idx) => {
+                      const badgeStyles: Record<string, string> = {
+                        "USER PROVIDED": "bg-blue-100 text-blue-800 border-blue-200",
+                        "DOCUMENT DERIVED": "bg-emerald-100 text-emerald-800 border-emerald-200",
+                        "LEGAL SOURCE DERIVED": "bg-purple-100 text-purple-800 border-purple-200",
+                        "AI INFERENCE": "bg-amber-100 text-amber-800 border-amber-200",
+                        "UNCERTAIN": "bg-orange-100 text-orange-800 border-orange-200",
+                      };
+                      return (
+                        <div
+                          key={idx}
+                          className="p-3 rounded-xl bg-[#FDFBF7] border border-[#E6DFD5] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                        >
+                          <div className="space-y-0.5">
+                            <span className="text-[#1A2B49] font-medium block">{cg.claim}</span>
+                            {cg.source_reference && (
+                              <span className="text-[11px] text-[#706E6B]">
+                                Source: {cg.source_reference}
+                              </span>
+                            )}
+                          </div>
+                          <span
+                            className={`shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                              badgeStyles[cg.grounding_type] || "bg-gray-100 text-gray-700"
+                            }`}
+                          >
+                            {cg.grounding_type} ({Math.round(cg.confidence * 100)}%)
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Actionable Next Steps */}
+              {orchestratorRun.suggested_next_steps && orchestratorRun.suggested_next_steps.length > 0 && (
+                <div className="bg-[#FAF7F2] border border-[#E6DFD5] rounded-3xl p-6 shadow-xs space-y-3">
+                  <h4 className="font-serif text-base font-bold text-[#1A2B49]">
+                    Recommended Procedural Steps
+                  </h4>
+                  <ul className="space-y-2 text-xs text-[#55524E]">
+                    {orchestratorRun.suggested_next_steps.map((step, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#15803D] shrink-0 mt-0.5" />
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Disclaimer */}
+              <div className="p-4 rounded-2xl bg-[#FFFDF9] border border-[#E6DFD5] text-[11px] text-[#706E6B] italic">
+                * {orchestratorRun.disclaimer}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* V3 TAB: FACT STORE & DISCREPANCIES */}
+      {activeTab === "facts" && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="font-serif text-xl font-bold text-[#1A2B49]">
+                Verified Fact Store & Contradiction Audit
+              </h2>
+              <p className="text-xs text-[#706E6B]">
+                Key factual anchors confirmed from contracts, receipts, and correspondence.
+              </p>
+            </div>
+            <button
+              onClick={handleAuditContradictions}
+              disabled={auditingContradictions}
+              className="px-4 py-2 rounded-xl bg-[#1A2B49] text-white text-xs font-semibold hover:bg-[#111C30] flex items-center gap-2 transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+            >
+              {auditingContradictions ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Auditing Discrepancies...
+                </>
+              ) : (
+                <>
+                  <AlertCircle className="w-3.5 h-3.5 text-[#E6C687]" />
+                  Audit Statement Contradictions
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Contradiction Alert Card */}
+          {contradictions && (
+            <div className="bg-[#FAF7F2] border border-[#E6DFD5] rounded-3xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-[#EAE2D5]">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-[#8C6D23]" />
+                  <h3 className="font-serif text-base font-bold text-[#1A2B49]">
+                    Neutral Discrepancy Findings ({contradictions.total_discrepancies})
+                  </h3>
+                </div>
+                <span className="text-[11px] text-[#706E6B]">Non-Accusatory Audit</span>
+              </div>
+
+              {contradictions.discrepancies.length > 0 ? (
+                <div className="space-y-3">
+                  {contradictions.discrepancies.map((disc, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-xl bg-[#FDFBF7] border border-[#E6DFD5] space-y-2 text-xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <strong className="text-[#1A2B49] font-semibold">{disc.nature}</strong>
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                            disc.severity === "critical"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
+                          {disc.severity} discrepancy
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[#55524E]">
+                        <div className="p-2.5 rounded-lg bg-[#FAF7F2] border border-[#EAE2D5]">
+                          <span className="text-[10px] font-bold uppercase text-[#706E6B] block">Source: {disc.source_a}</span>
+                          <p className="mt-0.5">{disc.claim_or_statement}</p>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-[#FAF7F2] border border-[#EAE2D5]">
+                          <span className="text-[10px] font-bold uppercase text-[#706E6B] block">Source: {disc.source_b}</span>
+                          <p className="mt-0.5">{disc.conflicting_statement}</p>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-[#8C6D23] font-medium pt-1">
+                        Observation: {disc.neutral_observation}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-[#15803D] flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" />
+                  No factual contradictions detected between statements and uploaded documents.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Add Fact Form */}
+          <form
+            onSubmit={handleAddFact}
+            className="p-5 rounded-2xl bg-[#FDFBF7] border border-[#E6DFD5] space-y-3"
+          >
+            <h4 className="font-serif text-sm font-bold text-[#1A2B49]">
+              Add Factual Anchor to Case Store
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                type="text"
+                required
+                placeholder="Fact Key (e.g. monthly_rent, notice_period_days, vacating_date)"
+                value={newFactKey}
+                onChange={(e) => setNewFactKey(e.target.value)}
+                className="px-3 py-2 rounded-xl border border-[#DDD5C7] bg-white text-xs text-[#1A2B49]"
+              />
+              <input
+                type="text"
+                required
+                placeholder="Fact Value (e.g. ₹28,000 / month, 30 days, 15 Oct 2024)"
+                value={newFactVal}
+                onChange={(e) => setNewFactVal(e.target.value)}
+                className="px-3 py-2 rounded-xl border border-[#DDD5C7] bg-white text-xs text-[#1A2B49]"
+              />
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-xl bg-[#1A2B49] text-white text-xs font-semibold hover:bg-[#111C30]"
+              >
+                Save Fact
+              </button>
+            </div>
+          </form>
+
+          {/* Fact Store Items Table */}
+          <div className="bg-[#FAF7F2] rounded-2xl border border-[#E6DFD5] overflow-hidden shadow-xs">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[#F7F2E8] border-b border-[#E6DFD5] text-[#706E6B] font-semibold">
+                <tr>
+                  <th className="p-3.5">Fact Identifier</th>
+                  <th className="p-3.5">Verified Value</th>
+                  <th className="p-3.5">Source</th>
+                  <th className="p-3.5">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#EAE2D5] text-[#55524E]">
+                {facts.length > 0 ? (
+                  facts.map((f) => (
+                    <tr key={f.id} className="hover:bg-[#FDFBF7]">
+                      <td className="p-3.5 font-mono font-medium text-[#1A2B49]">{f.fact_key}</td>
+                      <td className="p-3.5 font-medium">{f.fact_value}</td>
+                      <td className="p-3.5 capitalize text-[#706E6B]">{f.source_type}</td>
+                      <td className="p-3.5">
+                        <span className="inline-flex items-center gap-1 text-[11px] text-[#15803D] font-medium">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Verified
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="p-6 text-center text-[#706E6B]">
+                      No facts recorded in store yet. Add key amounts, dates, and terms above.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* V3 TAB: DEADLINES & LIMITATION */}
+      {activeTab === "deadlines" && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="font-serif text-xl font-bold text-[#1A2B49]">
+                Statutory Limitation & Procedural Deadlines
+              </h2>
+              <p className="text-xs text-[#706E6B]">
+                Track mandatory statutory notice periods and court limitation periods under Indian law.
+              </p>
+            </div>
+          </div>
+
+          {/* Add Deadline Form */}
+          <form
+            onSubmit={handleAddDeadline}
+            className="p-5 rounded-2xl bg-[#FDFBF7] border border-[#E6DFD5] space-y-3"
+          >
+            <h4 className="font-serif text-sm font-bold text-[#1A2B49]">
+              Track New Statutory Deadline or Notice
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input
+                type="text"
+                required
+                placeholder="Deadline Title (e.g. 15-day notice reply window)"
+                value={newDeadlineTitle}
+                onChange={(e) => setNewDeadlineTitle(e.target.value)}
+                className="px-3 py-2 rounded-xl border border-[#DDD5C7] bg-white text-xs text-[#1A2B49]"
+              />
+              <input
+                type="date"
+                required
+                value={newDeadlineDate}
+                onChange={(e) => setNewDeadlineDate(e.target.value)}
+                className="px-3 py-2 rounded-xl border border-[#DDD5C7] bg-white text-xs text-[#1A2B49]"
+              />
+              <input
+                type="text"
+                placeholder="Statutory Basis (e.g. Limitation Act 1963)"
+                value={newDeadlineStatute}
+                onChange={(e) => setNewDeadlineStatute(e.target.value)}
+                className="px-3 py-2 rounded-xl border border-[#DDD5C7] bg-white text-xs text-[#1A2B49]"
+              />
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-xl bg-[#1A2B49] text-white text-xs font-semibold hover:bg-[#111C30]"
+              >
+                Track Deadline
+              </button>
+            </div>
+          </form>
+
+          {/* Deadlines List */}
+          <div className="space-y-3">
+            {deadlines.length > 0 ? (
+              deadlines.map((d) => {
+                const isUrgent = d.days_remaining <= 7;
+                return (
+                  <div
+                    key={d.id}
+                    className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
+                      d.is_completed
+                        ? "bg-[#F3EDE3] border-[#E6DFD5] opacity-60"
+                        : isUrgent
+                        ? "bg-[#FFF5F5] border-[#FECDCD]"
+                        : "bg-[#FDFBF7] border-[#E6DFD5]"
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-bold ${d.is_completed ? "line-through text-[#706E6B]" : "text-[#1A2B49]"}`}>
+                          {d.title}
+                        </span>
+                        {d.statutory_basis && (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F7F2E8] text-[#8C6D23] border border-[#E6DFD5]">
+                            {d.statutory_basis}
+                          </span>
+                        )}
+                        {d.is_uncertain && (
+                          <span className="text-[10px] text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
+                            Uncertain Date
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-[#706E6B]">
+                        Due Date: <strong className="text-[#1A2B49]">{new Date(d.due_date).toLocaleDateString()}</strong> • {d.days_remaining > 0 ? `${d.days_remaining} days remaining` : "Expired"}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleToggleDeadline(d.id, d.is_completed)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-colors ${
+                          d.is_completed
+                            ? "bg-[#E6DFD5] text-[#55524E]"
+                            : "bg-[#1A2B49] text-white hover:bg-[#111C30]"
+                        }`}
+                      >
+                        {d.is_completed ? "Completed ✓" : "Mark Complete"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="p-8 text-center text-xs text-[#706E6B] bg-[#FAF7F2] rounded-2xl border border-[#E6DFD5]">
+                No statutory deadlines tracked for this case yet.
+              </div>
+            )}
           </div>
         </div>
       )}

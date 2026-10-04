@@ -439,3 +439,255 @@ class AuditLog(Base):
     metadata_ = Column("metadata", JSON)
     ip_address = Column(String)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+# --- V3 Domain Models ---
+
+class Organization(Base):
+    __tablename__ = "organizations"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String, nullable=False)
+    slug = Column(String, unique=True, nullable=False, index=True)
+    org_type = Column(String, default="ngo")  # ngo, legal_aid, law_firm, business, education
+    contact_email = Column(String, nullable=False)
+    max_members = Column(Integer, default=5)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class OrganizationMember(Base):
+    __tablename__ = "organization_members"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    role = Column(String, default="member")  # admin, staff, member, viewer
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class Role(Base):
+    __tablename__ = "roles"
+    name = Column(String, primary_key=True)
+    description = Column(Text)
+
+
+class UserRole(Base):
+    __tablename__ = "user_roles"
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    role_name = Column(String, ForeignKey("roles.name", ondelete="CASCADE"), primary_key=True)
+
+
+class Lawyer(Base):
+    __tablename__ = "lawyers"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    full_name = Column(String, nullable=False)
+    bar_council_id = Column(String, nullable=False, index=True)
+    state_bar_council = Column(String, nullable=False)
+    enrollment_year = Column(Integer, nullable=False)
+    practice_areas = Column(JSON, default=list)  # ["Property", "Tenancy", "Consumer", "Employment"]
+    languages = Column(JSON, default=lambda: ["en", "hi"])
+    state = Column(String, nullable=False, index=True)
+    city = Column(String, nullable=False, index=True)
+    years_experience = Column(Integer, default=1)
+    consultation_fee = Column(Integer, default=0)  # in INR (0 = pro bono / legal aid)
+    verification_status = Column(String, default="pending", index=True)  # pending, under_review, verified, rejected, suspended
+    verification_notes = Column(Text)
+    bio = Column(Text)
+    is_available = Column(Boolean, default=True)
+    rating = Column(Numeric(3, 2), default=5.0)
+    review_count = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class LawyerVerification(Base):
+    __tablename__ = "lawyer_verifications"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lawyer_id = Column(UUID(as_uuid=True), ForeignKey("lawyers.id", ondelete="CASCADE"), nullable=False)
+    id_card_url = Column(Text)
+    certificate_url = Column(Text)
+    submitted_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    reviewed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    status = Column(String, default="pending")  # pending, under_review, verified, rejected
+    admin_feedback = Column(Text)
+
+
+class Consultation(Base):
+    __tablename__ = "consultations"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    lawyer_id = Column(UUID(as_uuid=True), ForeignKey("lawyers.id", ondelete="CASCADE"), nullable=False)
+    status = Column(String, default="requested")  # requested, accepted, in_progress, completed, cancelled
+    shared_scopes = Column(JSON, default=lambda: ["summary", "timeline", "documents", "evidence"])
+    fee_inr = Column(Integer, default=0)
+    meeting_link = Column(Text)
+    lawyer_summary = Column(Text)
+    completed_at = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class LawyerMessage(Base):
+    __tablename__ = "lawyer_messages"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    consultation_id = Column(UUID(as_uuid=True), ForeignKey("consultations.id", ondelete="CASCADE"), nullable=False)
+    sender_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    content = Column(Text, nullable=False)
+    attachments = Column(JSON, default=list)
+    read_at = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class FactStore(Base):
+    __tablename__ = "fact_store"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="CASCADE"), nullable=False)
+    fact_key = Column(String, nullable=False)  # e.g. "security_deposit_amount"
+    fact_value = Column(Text, nullable=False)
+    data_type = Column(String, default="string")  # string, currency, date, person, clause
+    source_type = Column(String, nullable=False)  # document, user_input, evidence, inferred
+    source_ref = Column(Text)  # e.g. "Rental Agreement, Page 2"
+    confidence = Column(String, default="high")  # high, medium, low
+    user_confirmed = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class Deadline(Base):
+    __tablename__ = "deadlines"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="CASCADE"), nullable=False)
+    title = Column(String, nullable=False)
+    due_date = Column(Date, nullable=False)
+    source_document = Column(String)
+    source_section = Column(String)
+    statutory_basis = Column(String)  # e.g. "Section 138 NI Act"
+    importance = Column(String, default="high")  # critical, high, moderate, low
+    is_uncertain = Column(Boolean, default=False)
+    uncertainty_reason = Column(Text)
+    is_completed = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="SET NULL"), nullable=True)
+    title = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    notification_type = Column(String, nullable=False)  # deadline_approaching, lawyer_review_ready, doc_analyzed, system
+    severity = Column(String, default="info")  # info, warning, urgent
+    read_at = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class LegalAidResource(Base):
+    __tablename__ = "legal_aid_resources"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    authority_name = Column(String, nullable=False)  # NALSA, State Legal Services Authority, DLSA
+    state = Column(String, nullable=False, index=True)
+    district = Column(String)
+    contact_number = Column(String)
+    toll_free_number = Column(String, default="15100")
+    portal_url = Column(Text)
+    address = Column(Text)
+    eligibility_criteria = Column(JSON, default=list)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class ProceduralExplainer(Base):
+    __tablename__ = "procedural_explainers"
+    slug = Column(String, primary_key=True)  # e.g. "legal-notice-response"
+    title = Column(String, nullable=False)
+    category = Column(String, nullable=False)  # notices, civil_litigation, consumer, rent, criminal
+    summary = Column(Text, nullable=False)
+    steps = Column(JSON, nullable=False)  # Array of step objects
+    what_to_do = Column(Text, nullable=False)
+    what_not_to_do = Column(Text, nullable=False)
+    faqs = Column(JSON, default=list)
+    disclaimer = Column(Text, nullable=False)
+
+
+class GlossaryTerm(Base):
+    __tablename__ = "glossary_terms"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    english_term = Column(String, unique=True, nullable=False, index=True)
+    hindi_term = Column(String, nullable=False)
+    regional_terms = Column(JSON, default=dict)  # { "ta": "...", "bn": "...", "mr": "..." }
+    plain_explanation = Column(Text, nullable=False)
+    legal_context = Column(Text, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class Plan(Base):
+    __tablename__ = "plans"
+    id = Column(String, primary_key=True)  # free, plus, pro, business
+    name = Column(String, nullable=False)
+    price_inr_monthly = Column(Integer, default=0)
+    document_limit = Column(Integer, default=3)
+    ai_requests_limit = Column(Integer, default=30)
+    voice_minutes_limit = Column(Integer, default=10)
+    features = Column(JSON, default=list)
+
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    plan_id = Column(String, ForeignKey("plans.id"), nullable=False)
+    status = Column(String, default="active")  # active, past_due, canceled
+    current_period_start = Column(DateTime(timezone=True), default=datetime.utcnow)
+    current_period_end = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class Payment(Base):
+    __tablename__ = "payments"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    transaction_id = Column(String, unique=True, nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    lawyer_id = Column(UUID(as_uuid=True), ForeignKey("lawyers.id", ondelete="SET NULL"), nullable=True)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="SET NULL"), nullable=True)
+    amount_inr = Column(Integer, nullable=False)
+    currency = Column(String, default="INR")
+    payment_type = Column(String, nullable=False)  # subscription, lawyer_consultation, doc_generation
+    status = Column(String, default="pending")  # pending, success, failed, refunded
+    gateway_provider = Column(String, default="mock")  # razorpay, stripe, mock
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class UsageRecord(Base):
+    __tablename__ = "usage_records"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    metric = Column(String, nullable=False)  # documents_processed, ai_requests, voice_minutes, translations
+    amount = Column(Integer, default=1)
+    period_date = Column(Date, default=date.today)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="SET NULL"), nullable=True)
+    response_type = Column(String, nullable=False)  # ai_chat, research, translation, draft
+    is_helpful = Column(Boolean, nullable=False)
+    feedback_text = Column(Text)
+    reported_discrepancy = Column(Text)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class AgentRun(Base):
+    __tablename__ = "agent_runs"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    orchestrator_goal = Column(Text, nullable=False)
+    agents_invoked = Column(JSON, default=list)
+    tokens_consumed = Column(Integer, default=0)
+    latency_ms = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
