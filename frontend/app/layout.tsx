@@ -3,6 +3,8 @@ import { Outfit, Merriweather } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { Navbar } from "@/components/Navbar";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { CommandPalette } from "@/components/CommandPalette";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -18,13 +20,22 @@ const merriweather = Merriweather({
 });
 
 export const metadata: Metadata = {
-  title: "LegalSaathi V2 — Digital Legal Companion for India",
+  title: "LegalSaathi V4 — Digital Legal Intelligence & Access Platform for India",
   description:
-    "Understand legal situations, organize evidence, ask questions grounded in Indian law, and create structured legal drafts in simple language.",
-  keywords: ["legal assistance India", "case workspace", "legal RAG", "evidence locker", "Hindi legal", "Tamil legal"],
+    "Make legal information understandable and accessible to ordinary people in India. AI-powered document analysis, bilingual legal guidance, and trusted case intelligence.",
+  keywords: [
+    "legal assistance India",
+    "Indian law AI",
+    "case workspace",
+    "legal RAG",
+    "evidence locker",
+    "Hindi legal explanation",
+    "Tamil legal",
+    "DPDP compliance",
+  ],
   openGraph: {
-    title: "LegalSaathi V2 — Digital Legal Companion for India",
-    description: "Multilingual Indian Legal Assistance Platform for Ordinary People.",
+    title: "LegalSaathi V4 — Digital Legal Intelligence & Access Platform",
+    description: "Understand the law. Know what to do next. Multilingual Indian Legal Assistance Platform.",
     type: "website",
   },
 };
@@ -34,18 +45,20 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${outfit.variable} ${merriweather.variable}`}>
-      <body className="antialiased min-h-screen bg-[#F5F0E8] text-[#1A2B49] flex flex-col font-sans">
+      <body className="antialiased min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-150">
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 pb-16 md:pb-0">{children}</main>
+        <MobileBottomNav />
+        <CommandPalette />
         <Toaster
           position="top-right"
           toastOptions={{
             style: {
-              background: "#FAF7F2",
-              color: "#1A2B49",
-              border: "1px solid #DDD5C7",
+              background: "var(--surface)",
+              color: "var(--text-primary)",
+              border: "1px solid var(--border)",
               borderRadius: "12px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
               fontSize: "13px",
             },
           }}

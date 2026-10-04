@@ -10,20 +10,25 @@ import {
   File,
   Image,
   X,
-  CheckCircle,
-  Loader2,
+  CheckCircle2,
   AlertTriangle,
   ArrowLeft,
+  ShieldCheck,
+  Lock,
+  RefreshCw,
+  HelpCircle,
+  Clock,
+  ArrowRight,
 } from "lucide-react";
 import { documentsApi } from "@/lib/api";
 import toast from "react-hot-toast";
 
-const PROCESSING_STEPS = [
-  { key: "uploading", label: "Uploading file..." },
-  { key: "processing", label: "Processing document..." },
-  { key: "extracting", label: "Extracting text..." },
-  { key: "analyzing", label: "Analyzing document..." },
-  { key: "ready", label: "Ready!" },
+const REALISTIC_STAGES = [
+  { id: "uploaded", label: "Document uploaded" },
+  { id: "reading", label: "Reading document" },
+  { id: "extracting", label: "Extracting important information" },
+  { id: "understanding", label: "Understanding legal clauses" },
+  { id: "explaining", label: "Preparing simple explanation" },
 ];
 
 const ACCEPTED_TYPES = {
@@ -33,53 +38,60 @@ const ACCEPTED_TYPES = {
   "image/jpeg": ".jpg,.jpeg",
 };
 
-function getFileIcon(type: string) {
-  if (type.includes("pdf")) return FileText;
-  if (type.includes("image")) return Image;
-  return File;
-}
-
 export default function UploadPage() {
   const router = useRouter();
   const [dragOver, setDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [documentId, setDocumentId] = useState<string | null>(null);
-  const [currentStatus, setCurrentStatus] = useState<string>("uploading");
+  const [stageIndex, setStageIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  // Poll status until ready or error
+  // Poll status while cycling through realistic progress stages
   useEffect(() => {
-    if (!documentId || currentStatus === "ready" || currentStatus === "error") return;
-    const interval = setInterval(async () => {
+    if (!documentId) return;
+
+    // Advance realistic stages every 800ms
+    const stageTimer = setInterval(() => {
+      setStageIndex((prev) => (prev < REALISTIC_STAGES.length - 1 ? prev + 1 : prev));
+    }, 800);
+
+    const pollInterval = setInterval(async () => {
       try {
         const res = await documentsApi.status(documentId);
-        setCurrentStatus(res.status);
         if (res.status === "ready") {
-          clearInterval(interval);
-          toast.success("Document analyzed! Redirecting...");
-          setTimeout(() => router.push(`/analyze/${documentId}`), 1200);
+          clearInterval(pollInterval);
+          clearInterval(stageTimer);
+          setStageIndex(REALISTIC_STAGES.length);
+          toast.success("Document analyzed successfully!");
+          setTimeout(() => router.push(`/analyze/${documentId}`), 800);
         } else if (res.status === "error") {
-          clearInterval(interval);
-          setError(res.error_message || "Processing failed. Please try again.");
+          clearInterval(pollInterval);
+          clearInterval(stageTimer);
+          setError(res.error_message || "We couldn't read this document. Please check the file formatting.");
+          setUploading(false);
         }
       } catch {
-        clearInterval(interval);
+        // Continue polling
       }
-    }, 1500);
-    return () => clearInterval(interval);
-  }, [documentId, currentStatus, router]);
+    }, 1400);
+
+    return () => {
+      clearInterval(pollInterval);
+      clearInterval(stageTimer);
+    };
+  }, [documentId, router]);
 
   const handleFile = useCallback((file: File) => {
     const maxSizeMB = 20;
     if (file.size > maxSizeMB * 1024 * 1024) {
-      setError(`File too large. Maximum size is ${maxSizeMB}MB.`);
+      setError(`File size exceeds ${maxSizeMB}MB limit. Please upload a smaller document.`);
       return;
     }
     const validTypes = Object.keys(ACCEPTED_TYPES);
     const isValid = validTypes.some((t) => file.type === t) || file.name.endsWith(".docx");
     if (!isValid) {
-      setError("Unsupported file type. Please upload PDF, DOCX, PNG, or JPG.");
+      setError("Supported formats: PDF, DOCX, JPG, PNG. Please upload a standard legal document format.");
       return;
     }
     setError(null);
@@ -96,204 +108,235 @@ export default function UploadPage() {
     [handleFile],
   );
 
-  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
-  };
-
   const handleUpload = async () => {
     if (!selectedFile) return;
     setUploading(true);
-    setCurrentStatus("uploading");
+    setStageIndex(0);
     setError(null);
 
     try {
       const res = await documentsApi.upload(selectedFile);
       setDocumentId(res.id);
-      setCurrentStatus("processing");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Upload failed. Please try again.";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "We couldn't process this document right now. Please try again.";
       setError(message);
       setUploading(false);
     }
   };
 
-  const currentStepIndex = PROCESSING_STEPS.findIndex((s) => s.key === currentStatus);
-
   return (
-    <div className="page-container min-h-screen">
-      {/* Header */}
-      <div className="border-b border-white/5">
-        <div className="content-container">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center">
-                <Scale className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold text-lg text-white">LegalSaathi</span>
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)]">
+      {/* ─── HEADER ─── */}
+      <div className="border-b border-[var(--border)] bg-[var(--surface)]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Link
+              href="/dashboard"
+              className="p-1.5 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-secondary)] transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
             </Link>
-            <Link href="/dashboard" className="btn-ghost text-sm">
-              <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-            </Link>
+            <span className="text-xs font-semibold text-[var(--text-secondary)]">Back to Dashboard</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+            <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>DPDP Encrypted</span>
           </div>
         </div>
       </div>
 
-      <div className="content-container py-12">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Upload a Legal Document</h1>
-            <p className="text-slate-400">
-              Upload your document and we&apos;ll explain it in simple language within seconds.
-            </p>
-          </div>
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <div className="text-center mb-8">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
+            Document Intelligence
+          </span>
+          <h1 className="font-serif text-3xl font-bold text-[var(--text-primary)] mt-1">
+            Understand your legal document
+          </h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-1.5">
+            Get an instant plain-language breakdown of clauses, responsibilities, and areas worth reviewing.
+          </p>
+        </div>
 
-          {!uploading ? (
-            <>
-              {/* Drop Zone */}
-              <div
-                className={`upload-zone mb-6 ${dragOver ? "drag-over" : ""}`}
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={onDrop}
-                onClick={() => document.getElementById("file-input")?.click()}
-              >
-                <input
-                  id="file-input"
-                  type="file"
-                  className="hidden"
-                  accept=".pdf,.docx,.png,.jpg,.jpeg"
-                  onChange={onInputChange}
-                />
+        {/* ─── UPLOAD VIEW (Section 26) ─── */}
+        {!uploading ? (
+          <div className="space-y-6">
+            <div
+              className={`p-8 rounded-3xl border-2 border-dashed transition-all text-center cursor-pointer ${
+                dragOver
+                  ? "border-[var(--primary)] bg-[var(--primary-subtle)]"
+                  : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--primary)]/60"
+              }`}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={onDrop}
+              onClick={() => document.getElementById("file-upload-input")?.click()}
+            >
+              <input
+                id="file-upload-input"
+                type="file"
+                className="hidden"
+                accept=".pdf,.docx,.png,.jpg,.jpeg"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFile(file);
+                }}
+              />
 
-                {selectedFile ? (
-                  <div className="flex flex-col items-center gap-4">
-                    {(() => {
-                      const Icon = getFileIcon(selectedFile.type);
-                      return <Icon className="w-12 h-12 text-violet-400" />;
-                    })()}
-                    <div className="text-center">
-                      <p className="text-lg font-semibold text-white">{selectedFile.name}</p>
-                      <p className="text-sm text-slate-400">
-                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
-                    <button
-                      className="btn-ghost text-sm text-rose-400 hover:text-rose-300"
-                      onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }}
-                    >
-                      <X className="w-4 h-4" /> Remove
-                    </button>
+              {selectedFile ? (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-[var(--primary-subtle)] text-[var(--primary)] flex items-center justify-center">
+                    <FileText className="w-7 h-7" />
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center">
-                      <Upload className="w-8 h-8 text-violet-400" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-lg font-semibold text-white mb-1">
-                        Drop your document here
-                      </p>
-                      <p className="text-sm text-slate-400">
-                        or click to browse your files
-                      </p>
-                    </div>
-                    <div className="flex gap-2 flex-wrap justify-center">
-                      {["PDF", "DOCX", "PNG", "JPG"].map((ext) => (
-                        <span key={ext} className="badge badge-processing">{ext}</span>
-                      ))}
-                    </div>
-                    <p className="text-xs text-slate-500">Maximum file size: 20MB</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Error */}
-              {error && (
-                <div className="high-risk-alert mb-6">
-                  <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0" />
-                  <p>{error}</p>
-                </div>
-              )}
-
-              {/* Upload Button */}
-              {selectedFile && (
-                <button onClick={handleUpload} className="btn-primary w-full justify-center py-3.5 text-base">
-                  <Upload className="w-5 h-5" />
-                  Analyze this document
-                </button>
-              )}
-
-              {/* Supported formats info */}
-              <div className="mt-6 glass rounded-xl p-4">
-                <p className="text-sm font-semibold text-slate-300 mb-3">What we support:</p>
-                <div className="grid grid-cols-2 gap-2 text-sm text-slate-400">
-                  <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-400" /> PDF documents</div>
-                  <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-400" /> Word documents (.docx)</div>
-                  <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-400" /> Photos of documents</div>
-                  <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-400" /> Scanned documents (OCR)</div>
-                </div>
-              </div>
-            </>
-          ) : (
-            /* Processing State */
-            <div className="glass-strong rounded-2xl p-8">
-              <div className="text-center mb-8">
-                {currentStatus === "ready" ? (
-                  <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
-                ) : currentStatus === "error" ? (
-                  <AlertTriangle className="w-16 h-16 text-rose-400 mx-auto mb-4" />
-                ) : (
-                  <div className="w-16 h-16 rounded-full border-2 border-violet-500/30 border-t-violet-500 animate-spin mx-auto mb-4" />
-                )}
-                <h2 className="text-xl font-bold text-white mb-2">
-                  {currentStatus === "ready"
-                    ? "Analysis Complete!"
-                    : currentStatus === "error"
-                    ? "Processing Failed"
-                    : "Processing your document..."}
-                </h2>
-                <p className="text-slate-400 text-sm">{selectedFile?.name}</p>
-              </div>
-
-              {/* Steps */}
-              <div className="space-y-3">
-                {PROCESSING_STEPS.map((step, i) => {
-                  const isDone = i < currentStepIndex;
-                  const isActive = i === currentStepIndex;
-                  return (
-                    <div key={step.key} className={`flex items-center gap-3 transition-all duration-300`}>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        isDone ? "bg-emerald-500/20" : isActive ? "bg-violet-500/20" : "bg-white/5"
-                      }`}>
-                        {isDone ? (
-                          <CheckCircle className="w-4 h-4 text-emerald-400" />
-                        ) : isActive ? (
-                          <Loader2 className="w-4 h-4 text-violet-400 animate-spin" />
-                        ) : (
-                          <div className="w-2 h-2 rounded-full bg-slate-600" />
-                        )}
-                      </div>
-                      <span className={`text-sm ${isDone ? "text-emerald-400" : isActive ? "text-violet-300 font-medium" : "text-slate-500"}`}>
-                        {step.label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {error && (
-                <div className="high-risk-alert mt-6">
-                  <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0" />
                   <div>
-                    <p className="font-semibold text-rose-300">Error</p>
-                    <p className="text-sm">{error}</p>
+                    <h3 className="text-sm font-bold text-[var(--text-primary)]">{selectedFile.name}</h3>
+                    <p className="text-xs text-[var(--text-muted)]">
+                      {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Ready for analysis
+                    </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedFile(null);
+                    }}
+                    className="mt-1 text-xs text-[var(--error)] hover:underline flex items-center gap-1 font-semibold"
+                  >
+                    <X className="w-3.5 h-3.5" /> Remove file
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-[var(--surface-secondary)] text-[var(--primary)] flex items-center justify-center shadow-xs">
+                    <Upload className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-[var(--text-primary)]">
+                      Drop your legal document here
+                    </h2>
+                    <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                      or <span className="text-[var(--primary)] font-semibold underline">Choose a file</span> from your device
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1 text-[11px] font-mono text-[var(--text-muted)]">
+                    <span className="px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)]">PDF</span>
+                    <span className="px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)]">DOCX</span>
+                    <span className="px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)]">JPG</span>
+                    <span className="px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)]">PNG</span>
+                  </div>
+                  <p className="text-[11px] text-[var(--text-muted)]">Maximum file size: 20MB</p>
                 </div>
               )}
             </div>
-          )}
-        </div>
+
+            {/* Section 56 Error State */}
+            {error && (
+              <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-xs text-red-900 dark:text-red-300 space-y-2">
+                <div className="flex items-center gap-2 font-semibold">
+                  <AlertTriangle className="w-4 h-4 text-[var(--error)] shrink-0" />
+                  <span>We couldn&apos;t process this document.</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-red-800 dark:text-red-400">{error}</p>
+                <div className="pt-2 flex items-center gap-3 border-t border-red-200/60 dark:border-red-900/60">
+                  <button
+                    onClick={() => {
+                      setError(null);
+                      if (selectedFile) handleUpload();
+                    }}
+                    className="font-semibold underline hover:text-[var(--text-primary)] cursor-pointer"
+                  >
+                    Try again
+                  </button>
+                  <button
+                    onClick={() => {
+                      setError(null);
+                      setSelectedFile(null);
+                    }}
+                    className="font-semibold underline hover:text-[var(--text-primary)] cursor-pointer"
+                  >
+                    Upload another file
+                  </button>
+                  <Link href="/easy-help" className="hover:underline">
+                    Contact support
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            {selectedFile && !error && (
+              <button
+                onClick={handleUpload}
+                className="w-full py-3.5 rounded-2xl bg-[var(--primary)] text-white text-sm font-semibold hover:bg-[var(--primary-hover)] transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Analyze Document</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Section 54 Privacy Microcopy */}
+            <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-xs space-y-1">
+              <div className="flex items-center gap-2 font-semibold text-[var(--text-primary)]">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Private & Confidential</span>
+              </div>
+              <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
+                Your document is private to your account unless you choose to share it. We adhere strictly to the Digital Personal Data Protection (DPDP) Act 2023.
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* ─── REALISTIC MULTI-STEP PROGRESS STATE (Section 27) ─── */
+          <div className="bg-[var(--surface)] rounded-3xl border border-[var(--border)] p-6 sm:p-8 shadow-xl space-y-6">
+            <div className="text-center space-y-1">
+              <h2 className="font-serif text-xl font-bold text-[var(--text-primary)]">
+                Analyzing your legal document
+              </h2>
+              <p className="text-xs text-[var(--text-muted)]">
+                Extracting legal clauses, obligations, and statutory cross-references.
+              </p>
+            </div>
+
+            <div className="space-y-3 max-w-md mx-auto pt-2">
+              {REALISTIC_STAGES.map((stage, idx) => {
+                const isDone = idx < stageIndex;
+                const isCurrent = idx === stageIndex;
+                const isPending = idx > stageIndex;
+
+                return (
+                  <div
+                    key={stage.id}
+                    className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
+                      isCurrent
+                        ? "bg-[var(--primary-subtle)] border border-[var(--primary)]/30 text-[var(--primary)] font-bold shadow-2xs"
+                        : isDone
+                        ? "text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20"
+                        : "text-[var(--text-muted)] opacity-60"
+                    }`}
+                  >
+                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                      {isDone && <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                      {isCurrent && <span className="w-2.5 h-2.5 rounded-full bg-[var(--primary)] animate-ping" />}
+                      {isPending && <span className="w-2 h-2 rounded-full border border-[var(--border-strong)]" />}
+                    </div>
+                    <span className="text-xs">{stage.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pt-4 border-t border-[var(--border)] text-center text-[11px] text-[var(--text-muted)]">
+              This usually completes in 3-8 seconds depending on document length.
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,297 +1,317 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
-  Scale,
   FileText,
-  MessageSquare,
-  Languages,
-  Upload,
-  ChevronRight,
-  CheckCircle,
-  Shield,
-  Zap,
-  Lock,
+  MessageSquareText,
+  FilePlus2,
+  Paperclip,
+  Mic,
   ArrowRight,
-  AlertTriangle,
-  Star,
+  ShieldCheck,
+  Languages,
+  Users2,
+  Scale,
+  Sparkles,
+  ChevronRight,
+  Clock,
+  BookOpen,
+  CheckCircle2,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { VoiceFirstModal } from "@/components/VoiceFirstModal";
 
-const FEATURES = [
+const SAMPLE_QUESTIONS = [
+  "My landlord isn't returning my security deposit after moving out",
+  "Received a cheque bounce notice under Section 138",
+  "Employer terminated employment without paying notice period salary",
+  "Need to draft a residential rental agreement with 11-month clause",
+];
+
+const TRUST_PILLARS = [
   {
-    icon: FileText,
-    title: "Understand Documents",
-    description: "Upload a rental agreement, employment contract, or legal notice and receive a plain-language explanation of every clause.",
-    iconBg: "bg-[#EFF4FF]",
-    iconColor: "text-[#1E3A5F]",
-    border: "border-[#C7D7F5]",
+    icon: Scale,
+    title: "Source-Backed Answers",
+    description: "Every explanation cites statutory provisions like the Indian Contract Act or Tenancy Acts with relevant judgment references.",
   },
   {
-    icon: MessageSquare,
-    title: "Ask Questions",
-    description: "Ask questions about your document in plain language. Every answer is grounded in what the document actually says, with page citations.",
-    iconBg: "bg-[#FBF3DC]",
-    iconColor: "text-[#A67C3A]",
-    border: "border-[#E8C97A]",
+    icon: ShieldCheck,
+    title: "Privacy-First Architecture",
+    description: "Built strictly aligned with the DPDP Act 2023. Documents are private to your account and never used to train foundational models.",
   },
   {
     icon: Languages,
-    title: "Translate to Hindi",
-    description: "Translate your document or its explanation between English and Hindi. Choose legal precision or everyday simple language.",
-    iconBg: "bg-[#D1FAE5]",
-    iconColor: "text-[#0F7653]",
-    border: "border-[#A7F3D0]",
+    title: "Multilingual Indian Context",
+    description: "Read documents and explanations in Hindi, Bengali, Marathi, Tamil, Telugu, Kannada, Gujarati, and other Indian languages.",
   },
   {
-    icon: Scale,
-    title: "Create Legal Drafts",
-    description: "Describe your situation step by step and generate a draft legal response, demand letter, or agreement — then download as PDF.",
-    iconBg: "bg-[#FEF3C7]",
-    iconColor: "text-[#B45309]",
-    border: "border-[#FDE68A]",
+    icon: Users2,
+    title: "Human Legal Help When Needed",
+    description: "Direct bridge to verified legal advocates and District Legal Services Authorities (DLSA) when court representation is necessary.",
   },
-];
-
-const HOW_IT_WORKS = [
-  { step: "01", title: "Upload your document", desc: "PDF, Word document, or photo of a document — any format works" },
-  { step: "02", title: "We analyze it", desc: "AI extracts key information, parties, dates, obligations, and risks" },
-  { step: "03", title: "Read in plain language", desc: "See what it means, who is involved, what you owe, and what to watch out for" },
-  { step: "04", title: "Ask questions", desc: "Get grounded answers with citations to the exact page in your document" },
-];
-
-const TRUST_SIGNALS = [
-  { icon: Lock, text: "Your documents are private and secure" },
-  { icon: Shield, text: "Never used to train AI models" },
-  { icon: CheckCircle, text: "Answers grounded in your actual document" },
-  { icon: Zap, text: "Results in seconds" },
 ];
 
 export default function LandingPage() {
-  return (
-    <div className="page-container">
-      {/* ─── HERO ─── */}
-      <section className="hero-bg hero-pattern pt-12 pb-16 relative overflow-hidden">
-        {/* Decorative lines */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-b from-transparent to-[#C8B99A]/30" />
-          <div className="absolute bottom-0 right-12 w-48 h-48 rounded-full border border-[#DDD0BC]/40" />
-          <div className="absolute bottom-8 right-20 w-28 h-28 rounded-full border border-[#C8B99A]/30" />
-        </div>
+  const router = useRouter();
+  const [problemText, setProblemText] = useState("");
+  const [voiceOpen, setVoiceOpen] = useState(false);
 
-        <div className="content-container relative">
-          {/* Disclaimer banner */}
-          <div className="max-w-4xl mx-auto mb-8">
-            <div className="disclaimer-box text-xs">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <p>
-                <strong>Important:</strong> LegalSaathi provides AI-assisted legal information for ordinary citizens. It is not an AI lawyer and does not provide formal legal representation. For critical matters, consult a qualified advocate.
-              </p>
+  const handleSubmitQuestion = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!problemText.trim()) return;
+    router.push(`/chat?q=${encodeURIComponent(problemText.trim())}`);
+  };
+
+  return (
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)]">
+      {/* ─── HERO SECTION ─── */}
+      <section className="relative pt-12 md:pt-20 pb-16 md:pb-24 overflow-hidden border-b border-[var(--border)]">
+        {/* Subtle background glow */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-indigo-500/5 dark:bg-indigo-500/10 blur-3xl pointer-events-none rounded-full" />
+
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* Tagline Badge */}
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--surface)] border border-[var(--border)] shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-medium text-[var(--text-secondary)]">
+                Indian Legal Intelligence & Access Platform
+              </span>
             </div>
           </div>
 
-          {/* Headline */}
-          <div className="text-center max-w-4xl mx-auto fade-in-up">
-            <div className="inline-flex items-center gap-2 bg-[#FBF3DC] border border-[#E8C97A] px-4 py-2 rounded-full mb-6">
-              <Star className="w-3.5 h-3.5 text-[#A67C3A] fill-[#A67C3A]" />
-              <span className="text-xs text-[#A67C3A] font-semibold">Digital Legal Companion for India (V2)</span>
-            </div>
-
-            <h1 className="text-4xl md:text-6xl font-bold text-[#0F1B2D] mb-5 leading-[1.12] tracking-tight">
-              Understand Your{" "}
-              <span className="gradient-text-gold">Legal Situation.</span>
-              <br />
-              <span className="text-[#374151]">In Simple Language.</span>
+          {/* Main Headline (Section 14) */}
+          <div className="text-center max-w-3xl mx-auto">
+            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-[var(--text-primary)] leading-[1.15]">
+              Understand the law. <br />
+              <span className="text-indigo-600 dark:text-indigo-400">Know what to do next.</span>
             </h1>
 
-            <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto mb-8 leading-relaxed">
-              Organize your evidence, understand agreements, build case timelines, research Indian laws, and generate legal drafts — without legal jargon.
+            {/* Supporting Copy (Section 14) */}
+            <p className="mt-5 text-base sm:text-lg text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
+              Upload a legal document, describe your situation, or ask a question. Get a clear explanation, relevant sources, and practical next steps.
             </p>
 
-            <div className="flex flex-wrap gap-3 justify-center">
-              <Link href="/cases/new" className="btn-primary text-[15px] px-7 py-3 shadow-md">
-                <Scale className="w-4 h-4 text-[#E6C687]" />
-                Start a New Case
+            {/* Primary Action Buttons (Section 14) */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/upload"
+                className="px-5 py-3 rounded-xl bg-[var(--primary)] text-white text-sm font-semibold hover:bg-[var(--primary-hover)] transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+              >
+                <FileText className="w-4 h-4 text-indigo-200" />
+                Understand a Document
               </Link>
-              <Link href="/upload" className="btn-secondary text-[15px] px-7 py-3">
-                <Upload className="w-4 h-4" />
-                Upload Document
+              <Link
+                href="/chat"
+                className="px-5 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] text-sm font-semibold hover:bg-[var(--surface-secondary)] transition-all shadow-2xs flex items-center gap-2 cursor-pointer"
+              >
+                <MessageSquareText className="w-4 h-4 text-[var(--text-muted)]" />
+                Describe My Problem
               </Link>
-              <Link href="/create" className="btn-secondary text-[15px] px-7 py-3">
-                <FileText className="w-4 h-4" />
-                Create Legal Draft
-              </Link>
-            </div>
-
-            <div className="flex flex-wrap gap-4 justify-center mt-5">
-              <Link href="/translate" className="btn-ghost text-sm text-[#6B7280]">
-                <Languages className="w-4 h-4" /> Translate
-              </Link>
-              <Link href="/chat" className="btn-ghost text-sm text-[#6B7280]">
-                <MessageSquare className="w-4 h-4" /> Ask about a document
+              <Link
+                href="/create"
+                className="px-5 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] text-sm font-semibold hover:bg-[var(--surface-secondary)] transition-all shadow-2xs flex items-center gap-2 cursor-pointer"
+              >
+                <FilePlus2 className="w-4 h-4 text-[var(--text-muted)]" />
+                Create a Legal Document
               </Link>
             </div>
           </div>
 
-          {/* Hero card */}
-          <div className="max-w-3xl mx-auto mt-14 fade-in-up" style={{ animationDelay: "0.15s" }}>
-            <div className="card p-5 shadow-lg">
-              {/* Window chrome */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-[#FECACA]" />
-                  <div className="w-3 h-3 rounded-full bg-[#FEF08A]" />
-                  <div className="w-3 h-3 rounded-full bg-[#BBF7D0]" />
-                </div>
-                <div className="flex-1 bg-[#F2EDE0] rounded-md h-6 flex items-center px-3">
-                  <span className="text-xs text-[#9CA3AF]">legalsaathi.in/analyze</span>
-                </div>
+          {/* ─── INTERACTIVE HERO CARD (Section 15) ─── */}
+          <div className="mt-12 max-w-2xl mx-auto">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-xl p-4 sm:p-5 transition-all">
+              <div className="flex items-center justify-between pb-3 mb-2 border-b border-[var(--border)]">
+                <span className="text-xs font-semibold text-[var(--text-muted)] flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-500" /> What happened?
+                </span>
+                <span className="text-[11px] text-[var(--text-muted)]">Natural Language Legal Copilot</span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-[#F7F2E8] border border-[#EDE4D3] rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 bg-[#EFF4FF] rounded-lg flex items-center justify-center">
-                      <FileText className="w-4 h-4 text-[#1E3A5F]" />
-                    </div>
-                    <span className="text-sm font-semibold text-[#0F1B2D]">Rental Agreement.pdf</span>
-                    <span className="badge badge-ready ml-auto">Ready</span>
+              <form onSubmit={handleSubmitQuestion}>
+                <textarea
+                  value={problemText}
+                  onChange={(e) => setProblemText(e.target.value)}
+                  placeholder="&quot;My landlord isn't returning my deposit after 30 days notice...&quot; or paste a legal clause"
+                  rows={3}
+                  className="w-full bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-hidden"
+                />
+
+                <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]">
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href="/upload"
+                      className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-secondary)] transition-colors flex items-center gap-1.5 text-xs font-medium"
+                      title="Upload PDF, DOCX or image"
+                    >
+                      <Paperclip className="w-4 h-4" />
+                      <span className="hidden sm:inline">Upload</span>
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={() => setVoiceOpen(true)}
+                      className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-secondary)] transition-colors flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+                      title="Speak in Hindi, English, Tamil, etc."
+                    >
+                      <Mic className="w-4 h-4 text-indigo-500" />
+                      <span className="hidden sm:inline">Voice</span>
+                    </button>
                   </div>
-                  <p className="text-sm text-[#6B7280] leading-relaxed">
-                    This is a rental agreement between Rahul Sharma (landlord) and Amit Verma (tenant) for a flat in Bangalore from January to December 2027.
-                  </p>
-                </div>
 
-                <div className="space-y-2">
-                  {[
-                    { label: "Monthly Rent", value: "₹15,000 (due 5th)", dot: "bg-[#0F7653]" },
-                    { label: "Security Deposit", value: "₹45,000", dot: "bg-[#1E3A5F]" },
-                    { label: "Notice Period", value: "30 days", dot: "bg-[#A67C3A]" },
-                    { label: "⚠ Risk Flag", value: "Termination clause", dot: "bg-[#C0392B]" },
-                  ].map((item) => (
-                    <div key={item.label} className="bg-[#F7F2E8] border border-[#EDE4D3] rounded-lg px-3 py-2.5 flex items-center justify-between">
-                      <span className="text-xs text-[#6B7280] flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${item.dot}`} />
-                        {item.label}
-                      </span>
-                      <span className="text-xs font-semibold text-[#0F1B2D]">{item.value}</span>
-                    </div>
-                  ))}
+                  <button
+                    type="submit"
+                    disabled={!problemText.trim()}
+                    className="px-4 py-2 rounded-xl bg-[var(--primary)] disabled:opacity-40 text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <span>Analyze Situation</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-              </div>
+              </form>
+            </div>
+
+            {/* Quick Suggestions */}
+            <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
+              <span className="text-[11px] text-[var(--text-muted)] self-center mr-1">Common issues:</span>
+              {SAMPLE_QUESTIONS.map((q) => (
+                <button
+                  key={q}
+                  onClick={() => setProblemText(q)}
+                  className="text-[11px] px-2.5 py-1 rounded-full bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-[var(--text-secondary)] border border-[var(--border)] transition-colors text-left truncate max-w-xs"
+                >
+                  {q}
+                </button>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── TRUST SIGNALS ─── */}
-      <section className="py-10 bg-[#F2EDE0] border-y border-[#DDD0BC]">
-        <div className="content-container">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {TRUST_SIGNALS.map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-3 text-[#6B7280]">
-                <Icon className="w-5 h-5 text-[#A67C3A] flex-shrink-0" />
-                <span className="text-sm">{text}</span>
-              </div>
-            ))}
+      {/* ─── SECTION 16: TRUST SECTION (NO FAKE METRICS) ─── */}
+      <section className="py-16 md:py-20 bg-[var(--surface-secondary)] border-b border-[var(--border)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[var(--text-primary)] tracking-tight">
+              Designed for Trust, Restraint & Legal Accuracy
+            </h2>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              Legal technology requires absolute clarity. We ground every finding in official Indian statutes, not speculative AI text.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {TRUST_PILLARS.map((pillar) => {
+              const Icon = pillar.icon;
+              return (
+                <div
+                  key={pillar.title}
+                  className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs flex flex-col justify-between hover:border-[var(--border-strong)] transition-all"
+                >
+                  <div>
+                    <div className="w-10 h-10 rounded-xl bg-[var(--primary-subtle)] text-[var(--primary)] flex items-center justify-center mb-4">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-sm font-bold text-[var(--text-primary)] mb-1.5">{pillar.title}</h3>
+                    <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{pillar.description}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* ─── FEATURES ─── */}
-      <section id="features" className="py-24 bg-[#FDFAF5]">
-        <div className="content-container">
-          <div className="text-center mb-14">
-            <p className="section-label mb-3">What you can do</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#0F1B2D] mb-4">
-              Everything you need to understand your legal situation
+      {/* ─── PRODUCT CAPABILITY PREVIEW ─── */}
+      <section className="py-20 bg-[var(--bg)] border-b border-[var(--border)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
+              Workflow Demonstration
+            </span>
+            <h2 className="font-serif text-3xl font-bold text-[var(--text-primary)] mt-1">
+              How LegalSaathi Demystifies Documents
             </h2>
-            <p className="text-[#6B7280] max-w-xl mx-auto">
-              Four tools that work together to help you navigate legal documents without a law degree.
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              A side-by-side view of complex legal drafting converted into structured, actionable understanding.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {FEATURES.map(({ icon: Icon, title, description, iconBg, iconColor, border }) => (
-              <div key={title} className={`card card-hover p-6 border ${border}`}>
-                <div className={`w-11 h-11 rounded-xl ${iconBg} flex items-center justify-center mb-4 ${iconColor}`}>
-                  <Icon className="w-5 h-5" />
+          <div className="max-w-4xl mx-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-lg overflow-hidden grid grid-cols-1 md:grid-cols-2">
+            {/* Left: Original Contract Clause */}
+            <div className="p-6 border-b md:border-b-0 md:border-r border-[var(--border)] bg-[var(--surface-secondary)] flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-[var(--border)]">
+                  <span className="text-xs font-mono font-semibold text-[var(--text-muted)]">ORIGINAL CLAUSE 14.2</span>
+                  <span className="text-[10px] uppercase font-bold text-amber-600 bg-amber-100 dark:bg-amber-950 px-2 py-0.5 rounded">
+                    Worth Reviewing
+                  </span>
                 </div>
-                <h3 className="text-lg font-bold text-[#0F1B2D] mb-2">{title}</h3>
-                <p className="text-[#6B7280] text-sm leading-relaxed">{description}</p>
-                <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-[#A67C3A] mt-4 font-medium hover:text-[#C4943A] transition-colors">
-                  Try it <ChevronRight className="w-3.5 h-3.5" />
+                <p className="font-serif text-xs text-[var(--text-secondary)] leading-relaxed italic">
+                  &quot;The Lessor reserves the unconditional right to forfeit the entire security deposit amounting to ₹45,000/- forthwith in the event of early determination of the lease prior to the expiration of the lock-in period, notwithstanding any tender of 30-day notice.&quot;
+                </p>
+              </div>
+
+              <div className="mt-6 pt-3 border-t border-[var(--border)] flex items-center justify-between text-[11px] text-[var(--text-muted)]">
+                <span>Bangalore Residential Lease • Page 4</span>
+                <span className="text-slate-400">Section 74 review</span>
+              </div>
+            </div>
+
+            {/* Right: LegalSaathi Plain Explanation */}
+            <div className="p-6 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-[var(--border)]">
+                  <span className="text-xs font-semibold text-[var(--primary)] flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Plain Meaning
+                  </span>
+                  <span className="text-[10px] text-[var(--text-muted)]">Simple Mode</span>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <strong className="block text-[var(--text-primary)] font-semibold mb-0.5">What this means:</strong>
+                    <p className="text-[var(--text-secondary)] leading-relaxed">
+                      If you move out before the agreed lock-in date, the landlord wants to keep all ₹45,000 of your deposit, even if you give advance notice.
+                    </p>
+                  </div>
+
+                  <div>
+                    <strong className="block text-[var(--text-primary)] font-semibold mb-0.5">Indian Law Context:</strong>
+                    <p className="text-[var(--text-secondary)] leading-relaxed">
+                      Under Section 74 of the Indian Contract Act, 1872, a landlord cannot penalize beyond actual reasonable loss. An automatic total forfeiture may be challenged.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-3 border-t border-[var(--border)] flex items-center justify-between">
+                <Link
+                  href="/upload"
+                  className="text-xs font-semibold text-[var(--primary)] hover:underline flex items-center gap-1"
+                >
+                  Analyze your own document <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── HOW IT WORKS ─── */}
-      <section id="how-it-works" className="py-24 bg-[#F7F2E8] border-t border-[#DDD0BC]">
-        <div className="content-container">
-          <div className="text-center mb-14">
-            <p className="section-label mb-3">Simple process</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#0F1B2D] mb-4">
-              From confusing document to clear understanding
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
-            {/* Connecting line */}
-            <div className="hidden md:block absolute top-7 left-[12%] right-[12%] h-px bg-[#DDD0BC]" />
-
-            {HOW_IT_WORKS.map(({ step, title, desc }, i) => (
-              <div key={step} className="relative">
-                <div className="w-14 h-14 rounded-full bg-[#FDFAF5] border-2 border-[#DDD0BC] flex items-center justify-center mb-5 relative z-10">
-                  <span className="text-lg font-black text-[#C4943A]">{step}</span>
-                </div>
-                <h3 className="text-base font-bold text-[#0F1B2D] mb-2">{title}</h3>
-                <p className="text-[#6B7280] text-sm leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── CTA ─── */}
-      <section className="py-24 bg-[#FDFAF5]">
-        <div className="content-container">
-          <div className="max-w-2xl mx-auto text-center card p-12 border-[#DDD0BC]">
-            <div className="w-14 h-14 bg-[#1E3A5F] rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Scale className="w-7 h-7 text-white" />
             </div>
-            <h2 className="text-3xl font-bold text-[#0F1B2D] mb-4">
-              Don't let legal language confuse you
-            </h2>
-            <p className="text-[#6B7280] mb-8 leading-relaxed">
-              Start understanding your documents in minutes. No legal background required.
-            </p>
-            <Link href="/dashboard" className="btn-primary text-[15px] px-9 py-3.5">
-              Get started <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </div>
       </section>
 
-      {/* ─── FOOTER ─── */}
-      <footer className="border-t border-[#DDD0BC] py-10 bg-[#F2EDE0]">
-        <div className="content-container">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-5">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-[#1E3A5F] flex items-center justify-center">
-                <Scale className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="font-bold text-[#0F1B2D]">LegalSaathi</span>
-            </div>
-            <p className="text-xs text-[#9CA3AF] text-center max-w-lg">
-              AI-generated legal information for informational purposes only. Not a substitute for advice from a qualified lawyer. Laws vary by jurisdiction and circumstances.
+      {/* ─── RESPONSIBLE LEGAL UX NOTICE ─── */}
+      <section className="py-12 bg-[var(--surface-secondary)]">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="inline-flex items-center gap-2 p-3 px-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs">
+            <BookOpen className="w-4 h-4 text-indigo-500 shrink-0" />
+            <p className="text-xs text-[var(--text-secondary)] text-left">
+              <strong>Transparent Legal Standard:</strong> LegalSaathi synthesizes statutory texts and case judgments for legal awareness. It is not an alternative to formal representation by an advocate enrolled with the Bar Council of India.
             </p>
-            <p className="text-xs text-[#9CA3AF]">© 2027 LegalSaathi</p>
           </div>
         </div>
-      </footer>
+      </section>
+
+      <VoiceFirstModal open={voiceOpen} onClose={() => setVoiceOpen(false)} />
     </div>
   );
 }
