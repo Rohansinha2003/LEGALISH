@@ -2,36 +2,59 @@
 
 import { useState, Suspense } from "react";
 import Link from "next/link";
-import { Scale, ArrowLeft, Languages, ArrowRight, Loader2, AlertTriangle, Copy, CheckCircle } from "lucide-react";
-import { translateApi } from "@/lib/api";
+import {
+  Languages,
+  ArrowRight,
+  Loader2,
+  AlertTriangle,
+  Copy,
+  CheckCircle,
+  Volume2,
+  Shield,
+  Sparkles,
+} from "lucide-react";
+import { translateV2Api } from "@/lib/api";
+import { VoiceInputButton, ReadAloudButton } from "@/components/VoiceHelper";
 import toast from "react-hot-toast";
 
-type Lang = "en" | "hi";
-type Mode = "legal" | "simple";
+const ALL_LANGUAGES = [
+  { code: "en", name: "English", native: "English" },
+  { code: "hi", name: "Hindi", native: "हिन्दी" },
+  { code: "bn", name: "Bengali", native: "বাংলা" },
+  { code: "mr", name: "Marathi", native: "मराठी" },
+  { code: "ta", name: "Tamil", native: "தமிழ்" },
+  { code: "te", name: "Telugu", native: "తెలుగు" },
+  { code: "kn", name: "Kannada", native: "ಕನ್ನಡ" },
+  { code: "ml", name: "Malayalam", native: "മലയാളം" },
+  { code: "gu", name: "Gujarati", native: "ગુજરાતી" },
+  { code: "pa", name: "Punjabi", native: "ਪੰਜਾਬੀ" },
+  { code: "or", name: "Odia", native: "ଓଡ଼ିଆ" },
+];
+
+type Mode = "legal" | "simple" | "very_simple";
 
 function TranslateContent() {
-  const [sourceLang, setSourceLang] = useState<Lang>("en");
+  const [sourceLang, setSourceLang] = useState("en");
+  const [targetLang, setTargetLang] = useState("hi");
   const [mode, setMode] = useState<Mode>("simple");
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
-  const [notes, setNotes] = useState("");
+  const [disclaimer, setDisclaimer] = useState("");
+  const [preservedTerms, setPreservedTerms] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  const targetLang: Lang = sourceLang === "en" ? "hi" : "en";
 
   const handleTranslate = async () => {
     if (!inputText.trim()) return;
     setLoading(true);
     setOutputText("");
-    setNotes("");
     try {
-      const res = await translateApi.translate(inputText, sourceLang, targetLang, mode);
+      const res = await translateV2Api.translate(inputText, sourceLang, targetLang, mode);
       setOutputText(res.translated_text);
-      if (res.notes) setNotes(res.notes);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Translation failed";
-      toast.error(msg);
+      setDisclaimer(res.safety_disclaimer);
+      setPreservedTerms(res.preserved_terms || []);
+    } catch (e: any) {
+      toast.error(e.message || "Translation failed");
     } finally {
       setLoading(false);
     }
@@ -44,153 +67,161 @@ function TranslateContent() {
     toast.success("Copied to clipboard");
   };
 
-  const langLabels: Record<Lang, string> = { en: "English", hi: "हिंदी (Hindi)" };
-
   return (
-    <div className="page-container min-h-screen">
-      <div className="border-b border-white/5">
-        <div className="content-container">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center">
-                <Scale className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold text-lg text-white">LegalSaathi</span>
-            </Link>
-            <Link href="/dashboard" className="btn-ghost text-sm"><ArrowLeft className="w-4 h-4" /> Dashboard</Link>
-          </div>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Header */}
+      <div className="space-y-2 border-b border-[#E6DFD5] pb-6">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#8C6D23] bg-[#E6C687]/20 px-2.5 py-0.5 rounded-full">
+            Multilingual Indian Engine
+          </span>
         </div>
+        <h1 className="font-serif text-3xl font-bold text-[#1A2B49]">
+          Translate & Simplify Legal Documents
+        </h1>
+        <p className="text-xs text-[#706E6B] max-w-2xl leading-relaxed">
+          Translate between English and 10 Indian regional languages across 3 clarity modes. Crucial dates, monetary amounts, and statutory references are strictly protected.
+        </p>
       </div>
 
-      <div className="content-container py-10">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-              <Languages className="w-7 h-7 text-emerald-400" />
-              Translate Legal Text
-            </h1>
-            <p className="text-slate-400">Translate between English and Hindi in legal or simplified mode.</p>
+      {/* Control Bar: Language Selectors & Clarity Modes */}
+      <div className="bg-white rounded-3xl p-6 border border-[#E6DFD5] shadow-xs space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+          {/* Source Lang */}
+          <div>
+            <label className="block text-xs font-semibold text-[#55524E] mb-1.5">Source Language</label>
+            <select
+              value={sourceLang}
+              onChange={(e) => setSourceLang(e.target.value)}
+              className="w-full p-3 rounded-xl border border-[#DDD5C7] bg-[#FDFAF5] text-sm text-[#1A2B49] focus:outline-none focus:border-[#1A2B49]"
+            >
+              {ALL_LANGUAGES.map((l) => (
+                <option key={l.code} value={l.code}>{l.name} ({l.native})</option>
+              ))}
+            </select>
           </div>
 
-          {/* Controls */}
-          <div className="glass rounded-xl p-4 border border-white/5 flex flex-wrap items-center gap-4 mb-6">
-            {/* Language toggle */}
-            <div className="flex items-center gap-3 flex-1">
-              <button
-                onClick={() => setSourceLang("en")}
-                className={`flex-1 text-center py-2 px-4 rounded-lg text-sm font-semibold transition-all ${
-                  sourceLang === "en" ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-300" : "text-slate-400 hover:text-white"
-                }`}
-              >
-                English
-              </button>
-              <button
-                onClick={() => setSourceLang(sourceLang === "en" ? "hi" : "en")}
-                className="w-8 h-8 glass rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-colors"
-              >
-                <ArrowRight className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setSourceLang("hi")}
-                className={`flex-1 text-center py-2 px-4 rounded-lg text-sm font-semibold transition-all ${
-                  sourceLang === "hi" ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-300" : "text-slate-400 hover:text-white"
-                }`}
-              >
-                हिंदी (Hindi)
-              </button>
-            </div>
-
-            {/* Mode toggle */}
-            <div className="flex rounded-lg overflow-hidden border border-white/10">
-              {(["simple", "legal"] as Mode[]).map((m) => (
+          {/* Mode Selector */}
+          <div>
+            <label className="block text-xs font-semibold text-[#55524E] mb-1.5">Clarity Mode</label>
+            <div className="flex rounded-xl bg-[#F7F2E8] p-1 border border-[#DDD5C7]">
+              {[
+                { id: "legal", label: "Legal" },
+                { id: "simple", label: "Simple" },
+                { id: "very_simple", label: "Very Simple" },
+              ].map((m) => (
                 <button
-                  key={m}
-                  onClick={() => setMode(m)}
-                  className={`px-4 py-2 text-sm font-medium transition-all ${
-                    mode === m ? "bg-violet-500/20 text-violet-300" : "text-slate-400 hover:text-white"
+                  key={m.id}
+                  type="button"
+                  onClick={() => setMode(m.id as Mode)}
+                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                    mode === m.id
+                      ? "bg-[#1A2B49] text-white shadow-xs"
+                      : "text-[#706E6B] hover:text-[#1A2B49]"
                   }`}
                 >
-                  {m === "simple" ? "Simple Language" : "Legal Precision"}
+                  {m.label}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Mode info */}
-          <div className="disclaimer-box mb-6">
-            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs">
-              {mode === "simple"
-                ? "Simple mode: Translates using everyday language that non-lawyers can understand. Legal terms may be simplified."
-                : "Legal mode: Preserves exact legal terminology and meaning. Recommended for formal legal documents."}
-            </p>
+          {/* Target Lang */}
+          <div>
+            <label className="block text-xs font-semibold text-[#55524E] mb-1.5">Target Language</label>
+            <select
+              value={targetLang}
+              onChange={(e) => setTargetLang(e.target.value)}
+              className="w-full p-3 rounded-xl border border-[#DDD5C7] bg-[#FDFAF5] text-sm text-[#1A2B49] focus:outline-none focus:border-[#1A2B49]"
+            >
+              {ALL_LANGUAGES.map((l) => (
+                <option key={l.code} value={l.code}>{l.name} ({l.native})</option>
+              ))}
+            </select>
           </div>
+        </div>
 
-          {/* Text areas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div className="glass rounded-xl border border-white/5 flex flex-col">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-                <span className="text-sm font-semibold text-white">{langLabels[sourceLang]}</span>
-                <span className="text-xs text-slate-500">{inputText.length} / 10,000</span>
-              </div>
-              <textarea
-                className="flex-1 bg-transparent p-4 text-slate-200 text-sm leading-relaxed resize-none outline-none min-h-[280px] placeholder:text-slate-500"
-                placeholder={sourceLang === "en" ? "Paste your legal text here..." : "यहाँ अपना कानूनी पाठ डालें..."}
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value.slice(0, 10000))}
+        {/* Input & Output Boxes */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Input Box */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#1A2B49]">Input Legal Clause or Text</span>
+              <VoiceInputButton
+                onTranscript={(txt) => setInputText((prev) => prev ? `${prev} ${txt}` : txt)}
               />
             </div>
+            <textarea
+              rows={10}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="Paste clause or paragraph here (e.g. 'The lessee agrees to pay a refundable security deposit of Rs 45,000 on or before the execution date...')."
+              className="w-full p-4 rounded-2xl border border-[#DDD5C7] bg-[#FDFAF5] text-sm text-[#1A2B49] focus:outline-none focus:border-[#1A2B49] placeholder-[#9C9488]"
+            />
+            <button
+              type="button"
+              onClick={handleTranslate}
+              disabled={loading || !inputText.trim()}
+              className="w-full py-3 rounded-xl bg-[#1A2B49] text-white hover:bg-[#111C30] text-xs font-semibold shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Translating & Adapting to {ALL_LANGUAGES.find(l => l.code === targetLang)?.name}...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 text-[#E6C687]" />
+                  Translate to {ALL_LANGUAGES.find(l => l.code === targetLang)?.name}
+                </>
+              )}
+            </button>
+          </div>
 
-            <div className="glass rounded-xl border border-white/5 flex flex-col">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-                <span className="text-sm font-semibold text-white">{langLabels[targetLang]}</span>
-                {outputText && (
-                  <button onClick={copyOutput} className="btn-ghost text-xs py-1 px-2">
-                    {copied ? <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copied ? "Copied" : "Copy"}
+          {/* Output Box */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#1A2B49]">Translated / Simplified Output</span>
+              {outputText && (
+                <div className="flex items-center gap-2">
+                  <ReadAloudButton text={outputText} />
+                  <button
+                    onClick={copyOutput}
+                    className="p-1.5 rounded-lg text-xs font-medium bg-[#EFE8DD] text-[#55524E] hover:text-[#1A2B49] flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    {copied ? <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copied ? "Copied" : "Copy"}</span>
                   </button>
-                )}
+                </div>
+              )}
+            </div>
+
+            <div className="w-full h-[256px] p-4 rounded-2xl border border-[#DDD5C7] bg-[#FAF7F2] text-sm text-[#1A2B49] overflow-y-auto leading-relaxed">
+              {outputText ? (
+                <p className="whitespace-pre-wrap">{outputText}</p>
+              ) : (
+                <span className="text-[#9C9488] text-xs italic">
+                  Translation in &quot;{mode}&quot; mode will appear here...
+                </span>
+              )}
+            </div>
+
+            {/* Preserved Entities Badge */}
+            {preservedTerms.length > 0 && (
+              <div className="text-[11px] text-[#706E6B] bg-[#FDFAF5] p-2.5 rounded-xl border border-[#E6DFD5] flex items-center gap-2">
+                <Shield className="w-3.5 h-3.5 text-[#8C6D23]" />
+                <span>Preserved Terms: {preservedTerms.join(", ")}</span>
               </div>
-              <div className="flex-1 p-4 min-h-[280px]">
-                {loading ? (
-                  <div className="flex items-center justify-center h-full gap-3 text-slate-400">
-                    <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
-                    <span className="text-sm">Translating...</span>
-                  </div>
-                ) : outputText ? (
-                  <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{outputText}</p>
-                ) : (
-                  <p className="text-slate-500 text-sm">Translation will appear here...</p>
-                )}
-              </div>
-            </div>
+            )}
           </div>
+        </div>
 
-          {/* Translator notes */}
-          {notes && (
-            <div className="glass rounded-xl p-4 border border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-transparent mb-6">
-              <p className="text-sm text-blue-300"><strong>Translator note:</strong> {notes}</p>
-            </div>
-          )}
-
-          <button
-            onClick={handleTranslate}
-            disabled={!inputText.trim() || loading}
-            className="btn-primary w-full justify-center py-3.5 text-base disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Languages className="w-5 h-5" />}
-            {loading ? "Translating..." : `Translate to ${langLabels[targetLang]}`}
-          </button>
-
-          {/* Coming soon languages */}
-          <div className="mt-8 glass rounded-xl p-4 border border-white/5">
-            <p className="text-sm font-semibold text-slate-300 mb-3">Coming soon:</p>
-            <div className="flex flex-wrap gap-2">
-              {["Bengali", "Marathi", "Tamil", "Telugu", "Kannada", "Gujarati", "Malayalam", "Punjabi"].map((lang) => (
-                <span key={lang} className="badge bg-white/5 text-slate-500 border border-white/5">{lang}</span>
-              ))}
-            </div>
-          </div>
+        {/* Translation Disclaimer */}
+        <div className="p-4 rounded-2xl bg-[#F7F2E8] border border-[#DDD0BC] text-[11px] text-[#706E6B] flex items-start gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-[#8C6D23] shrink-0 mt-0.5" />
+          <p>
+            {disclaimer || "Translated text is provided for understanding. For formal legal submission to a court, consider using a qualified legal translator or advocate where required."}
+          </p>
         </div>
       </div>
     </div>
@@ -199,7 +230,7 @@ function TranslateContent() {
 
 export default function TranslatePage() {
   return (
-    <Suspense fallback={<div className="page-container flex items-center justify-center h-screen"><Loader2 className="w-8 h-8 text-violet-400 animate-spin" /></div>}>
+    <Suspense fallback={<div className="p-8 text-center text-xs text-[#706E6B]">Loading translation engine...</div>}>
       <TranslateContent />
     </Suspense>
   );

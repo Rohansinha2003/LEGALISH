@@ -67,57 +67,11 @@ const TRUST_SIGNALS = [
   { icon: Zap, text: "Results in seconds" },
 ];
 
-function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const h = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", h);
-    return () => window.removeEventListener("scroll", h);
-  }, []);
-
-  return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "navbar shadow-sm" : "bg-transparent"
-      }`}
-    >
-      <div className="content-container">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#1E3A5F] flex items-center justify-center">
-              <Scale className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <span className="font-bold text-[17px] text-[#0F1B2D] tracking-tight">LegalSaathi</span>
-            </div>
-          </div>
-
-          {/* Nav links */}
-          <div className="hidden md:flex items-center gap-1">
-            <Link href="#features" className="btn-ghost text-sm">Features</Link>
-            <Link href="#how-it-works" className="btn-ghost text-sm">How it works</Link>
-            <div className="w-px h-5 bg-[#DDD0BC] mx-2" />
-            <Link href="/dashboard" className="btn-primary text-sm py-2 px-5">
-              Open App
-            </Link>
-          </div>
-          <Link href="/dashboard" className="md:hidden btn-primary text-sm py-2 px-4">
-            Open App
-          </Link>
-        </div>
-      </div>
-    </nav>
-  );
-}
-
 export default function LandingPage() {
   return (
     <div className="page-container">
-      <Navbar />
-
       {/* ─── HERO ─── */}
-      <section className="hero-bg hero-pattern pt-24 pb-16 relative overflow-hidden">
+      <section className="hero-bg hero-pattern pt-12 pb-16 relative overflow-hidden">
         {/* Decorative lines */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-b from-transparent to-[#C8B99A]/30" />
@@ -127,41 +81,45 @@ export default function LandingPage() {
 
         <div className="content-container relative">
           {/* Disclaimer banner */}
-          <div className="max-w-4xl mx-auto mb-10">
+          <div className="max-w-4xl mx-auto mb-8">
             <div className="disclaimer-box text-xs">
               <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <p>
-                <strong>Important:</strong> LegalSaathi provides AI-generated legal information for informational purposes only. It is not a substitute for advice from a qualified lawyer. For urgent matters, consult a qualified advocate.
+                <strong>Important:</strong> LegalSaathi provides AI-assisted legal information for ordinary citizens. It is not an AI lawyer and does not provide formal legal representation. For critical matters, consult a qualified advocate.
               </p>
             </div>
           </div>
 
           {/* Headline */}
           <div className="text-center max-w-4xl mx-auto fade-in-up">
-            <div className="inline-flex items-center gap-2 bg-[#FBF3DC] border border-[#E8C97A] px-4 py-2 rounded-full mb-8">
+            <div className="inline-flex items-center gap-2 bg-[#FBF3DC] border border-[#E8C97A] px-4 py-2 rounded-full mb-6">
               <Star className="w-3.5 h-3.5 text-[#A67C3A] fill-[#A67C3A]" />
-              <span className="text-sm text-[#A67C3A] font-semibold">AI-Powered Legal Assistance for India</span>
+              <span className="text-xs text-[#A67C3A] font-semibold">Digital Legal Companion for India (V2)</span>
             </div>
 
             <h1 className="text-4xl md:text-6xl font-bold text-[#0F1B2D] mb-5 leading-[1.12] tracking-tight">
               Understand Your{" "}
-              <span className="gradient-text-gold">Legal Documents.</span>
+              <span className="gradient-text-gold">Legal Situation.</span>
               <br />
               <span className="text-[#374151]">In Simple Language.</span>
             </h1>
 
-            <p className="text-lg text-[#6B7280] max-w-2xl mx-auto mb-10 leading-relaxed">
-              Upload a legal document, understand what it means, ask questions, translate to Hindi, and create useful legal drafts — without needing a law degree.
+            <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto mb-8 leading-relaxed">
+              Organize your evidence, understand agreements, build case timelines, research Indian laws, and generate legal drafts — without legal jargon.
             </p>
 
             <div className="flex flex-wrap gap-3 justify-center">
-              <Link href="/upload" className="btn-primary text-[15px] px-7 py-3">
+              <Link href="/cases/new" className="btn-primary text-[15px] px-7 py-3 shadow-md">
+                <Scale className="w-4 h-4 text-[#E6C687]" />
+                Start a New Case
+              </Link>
+              <Link href="/upload" className="btn-secondary text-[15px] px-7 py-3">
                 <Upload className="w-4 h-4" />
-                Understand a Document
+                Upload Document
               </Link>
               <Link href="/create" className="btn-secondary text-[15px] px-7 py-3">
                 <FileText className="w-4 h-4" />
-                Create a Legal Draft
+                Create Legal Draft
               </Link>
             </div>
 

@@ -1,4 +1,4 @@
-"""Mock LLM provider for development without API keys."""
+"""Mock LLM provider for development without API keys — upgraded for V2."""
 import json
 from app.services.llm.base import LLMProvider, Message, LLMResponse
 from app.core.logging import get_logger
@@ -63,15 +63,181 @@ MOCK_QA_RESPONSE = {
     "found_in_document": True
 }
 
-MOCK_TRANSLATION_RESPONSE = {
-    "translated_text": "यह दस्तावेज़ एक किरायेदारी समझौता है जो मकान मालिक और किरायेदार के बीच है। इसमें किराए की शर्तें, भुगतान की तारीखें और दोनों पक्षों की ज़िम्मेदारियाँ शामिल हैं।",
-    "source_lang": "en",
-    "target_lang": "hi"
+MOCK_SITUATION_RESPONSE = {
+    "factual_summary": "The user entered into a residential tenancy in Karnataka. A security deposit was paid, and the landlord has reportedly withheld the deposit upon move-out citing unauthorized repairs without furnishing receipts.",
+    "possible_legal_area": "Tenancy & Rent Dispute / Unlawful Withholding of Security Deposit",
+    "urgency": "moderate",
+    "urgency_reason": "While there is no immediate eviction threat, statutory and contractual limitation periods apply for monetary claims.",
+    "is_emergency": False,
+    "emergency_warning": None,
+    "important_facts_missing": [
+        "Was a formal move-out inspection or handover checklist signed?",
+        "Do you have bank transfer receipts for the security deposit?",
+        "Has the landlord issued any written notice or invoice for repair costs?"
+    ],
+    "possible_options": [
+        {"title": "Issue a Formal Demand Notice", "description": "Send a written demand via registered post or email giving 15 days to refund the deposit.", "practicality": "high"},
+        {"title": "Mediation / Rent Authority", "description": "Approach the Rent Authority under the applicable State Tenancy Act.", "practicality": "medium"},
+        {"title": "Consumer / Civil Court Proceeding", "description": "File a claim for refund and compensation if informal resolution fails.", "practicality": "medium"}
+    ],
+    "evidence_to_preserve": [
+        "Signed Rental Agreement",
+        "Bank statement showing deposit transfer",
+        "WhatsApp / Email exchanges regarding handover and vacating date",
+        "Move-out photos or videos showing apartment condition"
+    ],
+    "lawyer_consultation_recommended": True,
+    "lawyer_consultation_reason": "An advocate can draft a formal statutory legal notice to establish formal liability."
+}
+
+MOCK_EVIDENCE_RESPONSE = {
+    "overall_assessment": "The preserved records provide a coherent narrative of tenancy and payments, but evidence regarding final condition handover is currently absent.",
+    "supporting_evidence": [
+        {
+            "evidence_id": "Bank Receipt #104",
+            "observation": "This appears to support the claim that ₹45,000 security deposit was transferred on 01 Jan 2026.",
+            "key_detail": "Transfer reference confirms payment to landlord's account"
+        },
+        {
+            "evidence_id": "WhatsApp Chat Export",
+            "observation": "This appears to support that the tenant gave 30 days prior notice to vacate by 31 Dec 2026.",
+            "key_detail": "Message dated 30 Nov 2026 acknowledged by landlord"
+        }
+    ],
+    "potential_conflicting_evidence": [
+        {
+            "evidence_id": "Landlord Notice Letter",
+            "observation": "This may present a conflict because the landlord claims deductions for wall painting and fixture damage.",
+            "reconciliation_advice": "Check move-in inventory photos against normal wear and tear definitions."
+        }
+    ],
+    "missing_evidence": [
+        {
+            "item": "Handover acknowledgment / Key return receipt",
+            "why_needed": "Crucial to establish the exact date possession was returned and landlord accepted keys.",
+            "how_to_obtain": "Check if an email or text confirmed receipt of keys on move-out day."
+        }
+    ],
+    "timeline_suggestions": [
+        {"date": "2026-01-01", "description": "Deposit transfer completed", "source_evidence": "Bank Receipt #104"},
+        {"date": "2026-11-30", "description": "Vacating notice communicated", "source_evidence": "WhatsApp Chat"}
+    ]
+}
+
+MOCK_TIMELINE_RESPONSE = [
+    {
+        "date": "2026-01-01",
+        "date_display": "01 Jan 2026",
+        "is_approximate": False,
+        "title": "Rental agreement executed & deposit paid",
+        "description": "Agreement signed for 11 months with ₹45,000 refundable security deposit",
+        "source": "Rental Agreement Page 1",
+        "confidence": "high"
+    },
+    {
+        "date": "2026-11-30",
+        "date_display": "30 Nov 2026",
+        "is_approximate": False,
+        "title": "Notice of vacating delivered",
+        "description": "Tenant provided 30 days advance notice to landlord via written message",
+        "source": "WhatsApp record",
+        "confidence": "high"
+    },
+    {
+        "date": "2026-12-31",
+        "date_display": "31 Dec 2026",
+        "is_approximate": False,
+        "title": "Premises vacated & keys handed over",
+        "description": "Tenant vacated premises; requested deposit refund within contractual 30 days",
+        "source": "User statement",
+        "confidence": "medium"
+    },
+    {
+        "date": "2027-01-20",
+        "date_display": "20 Jan 2027",
+        "is_approximate": False,
+        "title": "Landlord deduction notice received",
+        "description": "Landlord refused full refund citing damage expenses without receipts",
+        "source": "Notice letter",
+        "confidence": "high"
+    }
+]
+
+MOCK_LEGAL_RESEARCH_RESPONSE = {
+    "answer": "Under Indian tenancy jurisprudence and the Transfer of Property Act, 1882, a landlord cannot arbitrarily forfeit a tenant's security deposit without proving actual damages beyond normal wear and tear. Furthermore, under State Tenancy Acts (such as the Karnataka Rent Act), security deposits must be refunded within the statutory or contractually agreed timeframe upon peaceful handover.",
+    "legal_summary": "Security deposit is held in trust; deductions require itemized proof of damage, excluding normal wear and tear. Section 108 of Transfer of Property Act, 1882.",
+    "citations": [
+        {
+            "source_title": "Transfer of Property Act, 1882",
+            "section": "Section 108(m)",
+            "authority": "Parliament of India",
+            "excerpt": "The lessee is bound to keep, and on the termination of the lease to restore, the property in as good condition as it was in at the time when he was put into possession, subject only to reasonable wear and tear.",
+            "url": "https://www.indiacode.nic.in/handle/123456789/2338",
+            "verified": True
+        },
+        {
+            "source_title": "Consumer Protection Act, 2019",
+            "section": "Section 2(47)",
+            "authority": "Parliament of India",
+            "excerpt": "Unfair trade practice includes retaining amounts or refusing refund for services contrary to representations.",
+            "url": "https://www.indiacode.nic.in/handle/123456789/15256",
+            "verified": True
+        }
+    ],
+    "potential_conflicts": None,
+    "why_this_answer": {
+        "relevant_case_facts": "The landlord withheld deposit for painting and routine wear without supplying invoices.",
+        "applicable_provision": "Section 108(m) of the Transfer of Property Act, 1882",
+        "simple_reasoning": "Indian law explicitly protects tenants from bearing the cost of ordinary wear and tear. Unless the landlord can show specific damage caused by you with bills, the deposit must be returned."
+    },
+    "urgency_assessment": "moderate",
+    "next_practical_steps": [
+        "Send a formal written demand citing Section 108(m) and request refund within 15 days.",
+        "Request itemized vendor receipts for any repair claims exceeding normal wear."
+    ]
+}
+
+MOCK_DOC_REVIEW_RESPONSE = {
+    "overall_readiness": "ready_for_review",
+    "readiness_score": 88,
+    "summary_findings": "The draft contains the essential parties, recitals, and notice periods. One date consistency note was flagged.",
+    "critical_issues": [
+        {
+            "type": "inconsistent_date",
+            "clause_or_location": "Clause 2 (Term)",
+            "issue_description": "The agreement states an 11-month term, but the dates specified (01 Jan 2027 to 31 Dec 2027) span 12 months.",
+            "recommended_fix": "Change end date to 30 November 2027 if an 11-month agreement is intended, to avoid mandatory registration requirements."
+        }
+    ],
+    "warnings": [
+        "Ensure stamp duty is paid in accordance with the Karnataka Stamp Act before execution."
+    ],
+    "missing_details_to_fill": [
+        "Electricity meter current reading at time of possession"
+    ]
+}
+
+MOCK_LAWYER_PACKAGE_RESPONSE = {
+    "package_title": "LEGAL INTAKE BRIEF: Tenancy Security Deposit Dispute",
+    "executive_summary": "The client (Tenant) leased residential premises in Bangalore from Landlord under an 11-month agreement. All monthly rentals were cleared on time. Upon vacating on 31 Dec 2026, the Landlord failed to refund the ₹45,000 security deposit, claiming oral damages without furnishing invoices or bills.",
+    "parties_summary": "1. Tenant (Client): Amit Verma\n2. Landlord (Opposing Party): Rahul Sharma",
+    "chronology_summary": "• 01 Jan 2026: Tenancy started, ₹45,000 paid\n• 30 Nov 2026: 30-day notice served via WhatsApp\n• 31 Dec 2026: Key handed over\n• 20 Jan 2027: Landlord refused full refund",
+    "evidence_table": [
+        {"item": "Rental Agreement", "type": "Contract", "probative_value": "Shows ₹45,000 refundable deposit term"},
+        {"item": "Bank Receipt #104", "type": "Receipt", "probative_value": "Proof of payment"},
+        {"item": "WhatsApp Export", "type": "Communication", "probative_value": "Proof of timely 30-day notice"}
+    ],
+    "key_legal_questions_for_counsel": [
+        "Whether a formal statutory demand notice should precede filing before the Rent Controller?",
+        "Whether a Consumer Complaint for deficiency of housing service is viable alongside civil recovery?"
+    ],
+    "urgency_level": "moderate",
+    "recommended_advocate_specialization": "Tenancy & Civil Litigation Advocate"
 }
 
 
 class MockLLMProvider(LLMProvider):
-    """Development mock — returns realistic sample responses without calling any API."""
+    """Development mock — returns realistic sample responses without calling any external API."""
 
     async def complete(
         self,
@@ -81,15 +247,71 @@ class MockLLMProvider(LLMProvider):
         response_format: str | None = None,
     ) -> LLMResponse:
         logger.info("mock_llm_complete", message_count=len(messages))
-        # Detect intent from system prompt
         system = messages[0].content.lower() if messages else ""
-        if "translate" in system:
-            content = json.dumps(MOCK_TRANSLATION_RESPONSE)
+        user_content = messages[-1].content.lower() if len(messages) > 1 else ""
+
+        if "timeline" in system or "chronologist" in system:
+            content = json.dumps(MOCK_TIMELINE_RESPONSE)
+        elif "evidence" in system or "probative" in system:
+            content = json.dumps(MOCK_EVIDENCE_RESPONSE)
+        elif "situation" in system or "intake" in system or "urgency" in system:
+            content = json.dumps(MOCK_SITUATION_RESPONSE)
+        elif "research" in system or "hierarchy" in system or "authoritative" in system:
+            resp = dict(MOCK_LEGAL_RESEARCH_RESPONSE)
+            q_text = user_content
+            if "<user_question" in user_content:
+                try:
+                    q_text = user_content.split("<user_question")[1].split("</user_question>")[0].lower()
+                except Exception:
+                    q_text = user_content
+
+            if "cheque" in q_text or "138" in q_text or "bounce" in q_text:
+                resp["answer"] = "Under Section 138 of the Negotiable Instruments Act, 1881, upon receipt of statutory notice for a dishonoured cheque, you typically have 15 days to settle the amount before criminal proceedings can be initiated."
+                resp["citations"] = [{
+                    "source_title": "Negotiable Instruments Act, 1881",
+                    "section": "Section 138",
+                    "authority": "Parliament of India",
+                    "excerpt": "Where any cheque is returned by the bank unpaid, demand for payment must be made by giving a notice in writing within thirty days of information from bank, and drawer is given 15 days to make payment.",
+                    "url": "https://www.indiacode.nic.in/handle/123456789/2237",
+                    "verified": True
+                }]
+            elif "salary" in q_text or "wage" in q_text or "employer" in q_text:
+                resp["answer"] = "Under the Payment of Wages Act, 1936, wages must be disbursed within the statutory timeframe (7th or 10th of the following month). Continued delay provides grounds for an application before the Labour Commissioner / Payment of Wages Authority."
+                resp["citations"] = [{
+                    "source_title": "Payment of Wages Act, 1936",
+                    "section": "Section 5 & Section 15",
+                    "authority": "Parliament of India",
+                    "excerpt": "The wages of every person employed shall be paid before the expiry of the seventh day or tenth day. Application for delayed wages may be filed before the Authority.",
+                    "url": "https://www.indiacode.nic.in/handle/123456789/2361",
+                    "verified": True
+                }]
+            content = json.dumps(resp)
+        elif "consistency auditor" in system or "review this document" in system:
+            content = json.dumps(MOCK_DOC_REVIEW_RESPONSE)
+        elif "lawyer case package" in system or "counsel" in system:
+            content = json.dumps(MOCK_LAWYER_PACKAGE_RESPONSE)
+        elif "translat" in system or "translat" in user_content:
+            # Check target language
+            target_lang = "hi"
+            for lang in ["bengali", "marathi", "tamil", "telugu", "kannada", "malayalam", "gujarati", "punjabi", "odia"]:
+                if lang in user_content or lang in system:
+                    target_lang = lang
+                    break
+            content = json.dumps({
+                "translated_text": "यह दस्तावेज़ आपके कानूनी अधिकारों और समझौते की शर्तों को सरल भाषा में स्पष्ट करता है।",
+                "source_lang": "en",
+                "target_lang": target_lang,
+                "mode": "simple",
+                "safety_disclaimer": "Translated text is provided for understanding. For formal legal submission, consider using a qualified legal translator or advocate where required.",
+                "preserved_terms": ["Rahul Sharma", "Amit Verma", "₹45,000", "01/01/2026"],
+                "notes": "Verified term preservation."
+            })
         elif "question" in system or "answer" in system:
             content = json.dumps(MOCK_QA_RESPONSE)
         else:
             content = json.dumps(MOCK_ANALYSIS_RESPONSE)
-        return LLMResponse(content=content, model="mock-gpt-4o", usage={"prompt_tokens": 100, "completion_tokens": 300})
+
+        return LLMResponse(content=content, model="mock-gpt-4o", usage={"prompt_tokens": 150, "completion_tokens": 350})
 
     async def complete_json(
         self,
@@ -104,7 +326,7 @@ class MockLLMProvider(LLMProvider):
 def get_llm_provider() -> LLMProvider:
     from app.core.config import get_settings
     settings = get_settings()
-    if settings.LLM_PROVIDER == "openai":
+    if settings.LLM_PROVIDER == "openai" and settings.LLM_API_KEY:
         from app.services.llm.openai_provider import OpenAIProvider
         return OpenAIProvider()
     return MockLLMProvider()

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, Merriweather } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import { Navbar } from "@/components/Navbar";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -17,13 +18,13 @@ const merriweather = Merriweather({
 });
 
 export const metadata: Metadata = {
-  title: "LegalSaathi — Understand Your Legal Documents",
+  title: "LegalSaathi V2 — Digital Legal Companion for India",
   description:
-    "Upload a legal document, understand what it means in simple language, ask questions, translate it, and create useful legal drafts — without needing to understand complicated legal language.",
-  keywords: ["legal document", "India legal", "legal AI", "document analysis", "Hindi legal"],
+    "Understand legal situations, organize evidence, ask questions grounded in Indian law, and create structured legal drafts in simple language.",
+  keywords: ["legal assistance India", "case workspace", "legal RAG", "evidence locker", "Hindi legal", "Tamil legal"],
   openGraph: {
-    title: "LegalSaathi — Understand Your Legal Documents",
-    description: "AI-powered legal assistance for ordinary people in India.",
+    title: "LegalSaathi V2 — Digital Legal Companion for India",
+    description: "Multilingual Indian Legal Assistance Platform for Ordinary People.",
     type: "website",
   },
 };
@@ -33,16 +34,19 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${outfit.variable} ${merriweather.variable}`}>
-      <body className="antialiased">
-        {children}
+      <body className="antialiased min-h-screen bg-[#F5F0E8] text-[#1A2B49] flex flex-col font-sans">
+        <Navbar />
+        <main className="flex-1">{children}</main>
         <Toaster
           position="top-right"
           toastOptions={{
             style: {
-              background: "#1a1a2e",
-              color: "#e2e8f0",
-              border: "1px solid rgba(139, 92, 246, 0.3)",
+              background: "#FAF7F2",
+              color: "#1A2B49",
+              border: "1px solid #DDD5C7",
               borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+              fontSize: "13px",
             },
           }}
         />
