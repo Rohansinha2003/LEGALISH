@@ -19,6 +19,11 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("legalsaathi_starting", environment=settings.ENVIRONMENT, version="2.0.0")
+    try:
+        from app.core.database import init_db
+        await init_db()
+    except Exception as e:
+        logger.error("database_init_failed", error=str(e))
     yield
     logger.info("legalsaathi_shutdown")
 

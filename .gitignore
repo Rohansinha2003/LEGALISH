@@ -59,5 +59,9 @@ htmlcov/
 # Uploads (temp)
 backend/uploads/
 
+# Database files
+*.db
+*.sqlite3
+
 # Generated
 frontend/.next/

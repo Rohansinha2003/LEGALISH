@@ -1,5 +1,6 @@
 """Mock LLM provider for development without API keys — upgraded for V2."""
 import json
+import re
 from app.services.llm.base import LLMProvider, Message, LLMResponse
 from app.core.logging import get_logger
 
@@ -291,20 +292,65 @@ class MockLLMProvider(LLMProvider):
         elif "lawyer case package" in system or "counsel" in system:
             content = json.dumps(MOCK_LAWYER_PACKAGE_RESPONSE)
         elif "translat" in system or "translat" in user_content:
-            # Check target language
             target_lang = "hi"
-            for lang in ["bengali", "marathi", "tamil", "telugu", "kannada", "malayalam", "gujarati", "punjabi", "odia"]:
-                if lang in user_content or lang in system:
-                    target_lang = lang
-                    break
+            source_lang = "en"
+            mode = "simple"
+
+            m_target = re.search(r"Target Language:\s*([a-zA-Z_-]+)", user_content, re.IGNORECASE)
+            if m_target:
+                target_lang = m_target.group(1).lower()
+
+            m_source = re.search(r"Source Language:\s*([a-zA-Z_-]+)", user_content, re.IGNORECASE)
+            if m_source:
+                source_lang = m_source.group(1).lower()
+
+            m_mode = re.search(r"Language Mode:\s*([a-zA-Z_-]+)", user_content, re.IGNORECASE)
+            if m_mode:
+                mode = m_mode.group(1).lower()
+
+            translations = {
+                "hi": "यह दस्तावेज़ आपके कानूनी अधिकारों और समझौते की शर्तों को सरल भाषा में स्पष्ट करता है।",
+                "hindi": "यह दस्तावेज़ आपके कानूनी अधिकारों और समझौते की शर्तों को सरल भाषा में स्पष्ट करता है।",
+                "bn": "এই নথিটি আপনার আইনি অধিকার এবং চুক্তির শর্তাবলী সহজ ভাষায় ব্যাখ্যা করে।",
+                "bengali": "এই নথিটি আপনার আইনি অধিকার এবং চুক্তির শর্তাবলী সহজ ভাষায় ব্যাখ্যা করে।",
+                "mr": "हा दस्तऐवज तुमचे कायदेशीर हक्क आणि कराराच्या अटी सोप्या भाषेत स्पष्ट करतो.",
+                "marathi": "हा दस्तऐवज तुमचे कायदेशीर हक्क आणि कराराच्या अटी सोप्या भाषेत स्पष्ट करतो.",
+                "ta": "இந்த ஆவணம் உங்கள் சட்ட உரிமைகள் மற்றும் ஒப்பந்த விதிமுறைகளை எளிய மொழியில் விளக்குகிறது.",
+                "tamil": "இந்த ஆவணம் உங்கள் சட்ட உரிமைகள் மற்றும் ஒப்பந்த விதிமுறைகளை எளிய மொழியில் விளக்குகிறது.",
+                "te": "ఈ పత్రం మీ చట్టపరమైన హక్కులు మరియు ఒప్పంద నిబంధనలను సరళమైన భాషలో వివరిస్తుంది.",
+                "telugu": "ఈ పత్రం మీ చట్టపరమైన హక్కులు మరియు ఒప్పంద నిబంధనలను సరళమైన భాషలో వివరిస్తుంది.",
+                "kn": "ಈ ದಾಖಲೆಯು ನಿಮ್ಮ ಕಾನೂನು ಹಕ್ಕುಗಳು ಮತ್ತು ಒಪ್ಪಂದದ ನಿಯಮಗಳನ್ನು ಸರಳ ಭಾಷೆಯಲ್ಲಿ ಸ್ಪಷ್ಟಪಡಿಸುತ್ತದೆ.",
+                "kannada": "ಈ ದಾಖಲೆಯು ನಿಮ್ಮ ಕಾನೂನು ಹಕ್ಕುಗಳು ಮತ್ತು ಒಪ್ಪಂದದ ನಿಯಮಗಳನ್ನು ಸರಳ ಭಾಷೆಯಲ್ಲಿ ಸ್ಪಷ್ಟಪಡಿಸುತ್ತದೆ.",
+                "ml": "ഈ രേഖ നിങ്ങളുടെ നിയമപരമായ അവകാശങ്ങളും കരാർ നിబంధനകളും ലളിതമായ ഭാഷയിൽ വ്യക്തമാക്കുന്നു.",
+                "malayalam": "ഈ രേഖ നിങ്ങളുടെ നിയമപരമായ അവകാശങ്ങളും കരാർ നിబంధനകളും ലളിതമായ ഭാഷയിൽ വ്യക്തമാക്കുന്നു.",
+                "gu": "આ દસ્તાવેજ તમારા કાનૂની અધિકારો અને કરારની શરતોને સરળ ભાષામાં સ્પષ્ટ કરે છે.",
+                "gujarati": "આ દસ્તાવેજ તમારા કાનૂની અધિકારો અને કરારની શરતોને સરળ ભાષામાં સ્પષ્ટ કરે છે.",
+                "pa": "ਇਹ ਦਸਤਾਵੇਜ਼ ਤੁਹਾਡੇ ਕਾਨੂੰਨੀ ਅਧਿਕਾਰਾਂ ਅਤੇ ਸਮਝੌਤੇ ਦੀਆਂ ਸ਼ਰਤਾਂ ਨੂੰ ਸਰਲ ਭਾਸ਼ਾ ਵਿੱਚ ਸਪਸ਼ਟ ਕਰਦਾ ਹੈ।",
+                "punjabi": "ਇਹ ਦਸਤਾਵੇਜ਼ ਤੁਹਾਡੇ ਕਾਨੂੰਨੀ ਅਧਿਕਾਰਾਂ ਅਤੇ ਸਮਝੌਤੇ ਦੀਆਂ ਸ਼ਰਤਾਂ ਨੂੰ ਸਰਲ ਭਾਸ਼ਾ ਵਿੱਚ ਸਪਸ਼ਟ ਕਰਦਾ ਹੈ।",
+                "or": "ଏହି ଦଲିଲ ଆପଣଙ୍କର ଆଇନଗତ ଅଧିକାର ଏବଂ ଚୁକ୍ତିନାମାର ସର୍ତ୍ତାବଳୀକୁ ସରଳ ଭାଷାରେ ବୁଝାଇଥାଏ।",
+                "odia": "ଏହି ଦଲିଲ ଆପଣଙ୍କର ଆଇନଗତ ଅଧିକାର ଏବଂ ଚୁକ୍ତିନାମାର ସର୍ତ୍ତାବଳୀକୁ ସରଳ ଭାଷାରେ ବୁଝାଇଥାଏ।",
+                "en": "This document explains your legal rights and agreement terms in clear, plain language.",
+                "english": "This document explains your legal rights and agreement terms in clear, plain language.",
+            }
+
+            translated_text = translations.get(target_lang, "यह दस्तावेज़ आपके कानूनी अधिकारों और समझौते की शर्तों को सरल भाषा में स्पष्ट करता है।")
+
+            # Extract preserved terms dynamically from user_content
+            preserved = []
+            for token in ["Rahul Sharma", "Amit Verma", "₹45,000", "Rs. 45,000", "Rs 45,000", "Rs 25,000", "01/01/2026", "01 Jan 2026", "Section 108", "Section 138"]:
+                if token.lower() in user_content.lower():
+                    preserved.append(token)
+            if not preserved:
+                preserved = ["Crucial Terms Preserved"]
+
             content = json.dumps({
-                "translated_text": "यह दस्तावेज़ आपके कानूनी अधिकारों और समझौते की शर्तों को सरल भाषा में स्पष्ट करता है।",
-                "source_lang": "en",
+                "translated_text": translated_text,
+                "source_lang": source_lang,
                 "target_lang": target_lang,
-                "mode": "simple",
+                "mode": mode,
                 "safety_disclaimer": "Translated text is provided for understanding. For formal legal submission, consider using a qualified legal translator or advocate where required.",
-                "preserved_terms": ["Rahul Sharma", "Amit Verma", "₹45,000", "01/01/2026"],
-                "notes": "Verified term preservation."
+                "preserved_terms": preserved,
+                "notes": f"Adapted accurately in '{mode}' clarity mode with statutory integrity."
             })
         elif "question" in system or "answer" in system:
             content = json.dumps(MOCK_QA_RESPONSE)

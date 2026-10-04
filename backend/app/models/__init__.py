@@ -13,7 +13,7 @@ from sqlalchemy import (
     ForeignKey,
     JSON,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid as UUID
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from pgvector.sqlalchemy import Vector

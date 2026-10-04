@@ -27,7 +27,7 @@ Text to translate:
 
 Respond ONLY with a valid JSON object:
 {{{{
-  "translated_text": "The translated/adapted text in target language script (e.g. Devanagari, Tamil, Bengali, etc.)",
+  "translated_text": "The translated/adapted text in target language script",
   "source_lang": "{{source_lang}}",
   "target_lang": "{{target_lang}}",
   "mode": "{{mode}}",
