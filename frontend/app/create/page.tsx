@@ -1,32 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   Scale,
   ArrowLeft,
   ChevronRight,
-  ChevronLeft,
   FileText,
   CheckCircle2,
   Download,
   Copy,
   Sparkles,
-  ShieldCheck,
   AlertTriangle,
   Info,
-  Layers,
   FilePlus2,
-  RefreshCw,
   Building,
   UserCheck,
   FileSignature,
   FileSpreadsheet,
+  Edit3,
+  Languages,
+  BookOpen,
 } from "lucide-react";
-import { generateApi, DocumentType, GeneratedDocumentResult } from "@/lib/api";
 import toast from "react-hot-toast";
 
-// Section 34 Document Templates
+// Section 26 Document Cards with individual vibrant accents
 const DOCUMENT_OPTIONS = [
   {
     id: "rental_agreement",
@@ -34,6 +32,17 @@ const DOCUMENT_OPTIONS = [
     category: "Tenancy",
     desc: "11-month residential lease with deposit protection, maintenance terms, and notice period.",
     icon: Building,
+    color: "from-indigo-500/15 via-blue-500/5 to-transparent text-indigo-600 dark:text-indigo-400 border-indigo-500/25",
+    iconBg: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+  },
+  {
+    id: "legal_notice",
+    name: "Legal Notice",
+    category: "Dispute",
+    desc: "Formal statutory demand notice for debt recovery, deposit refund, or contract breach.",
+    icon: Scale,
+    color: "from-purple-500/15 via-pink-500/5 to-transparent text-purple-600 dark:text-purple-400 border-purple-500/25",
+    iconBg: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
   },
   {
     id: "employment_agreement",
@@ -41,13 +50,8 @@ const DOCUMENT_OPTIONS = [
     category: "Workplace",
     desc: "Employment contract outlining probation, confidentiality, duties, and IP ownership.",
     icon: UserCheck,
-  },
-  {
-    id: "legal_notice",
-    name: "Legal Notice",
-    category: "Dispute",
-    desc: "Formal statutory demand notice for outstanding debt, deposit refund, or contract breach.",
-    icon: Scale,
+    color: "from-sky-500/15 via-cyan-500/5 to-transparent text-sky-600 dark:text-sky-400 border-sky-500/25",
+    iconBg: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
   },
   {
     id: "affidavit",
@@ -55,6 +59,8 @@ const DOCUMENT_OPTIONS = [
     category: "Notarial",
     desc: "Sworn legal declaration under oath for name change, address proof, or bank records.",
     icon: FileSignature,
+    color: "from-amber-500/15 via-orange-500/5 to-transparent text-amber-600 dark:text-amber-400 border-amber-500/25",
+    iconBg: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   },
   {
     id: "declaration",
@@ -62,27 +68,17 @@ const DOCUMENT_OPTIONS = [
     category: "Official",
     desc: "Formal factual statement of truth for public authorities or corporate compliance.",
     icon: FileText,
-  },
-  {
-    id: "complaint",
-    name: "Complaint",
-    category: "Consumer / Police",
-    desc: "Written grievance for consumer forum, cyber cell, or housing society management.",
-    icon: AlertTriangle,
+    color: "from-teal-500/15 via-emerald-500/5 to-transparent text-teal-600 dark:text-teal-400 border-teal-500/25",
+    iconBg: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
   },
   {
     id: "application",
     name: "Application",
     category: "Administrative",
-    desc: "Formal request to government department, court registry, or municipal body.",
+    desc: "Formal petition to government department, court registry, or municipal body.",
     icon: FileSpreadsheet,
-  },
-  {
-    id: "authorization_letter",
-    name: "Authorization Letter",
-    category: "Representation",
-    desc: "Delegation letter authorizing a representative to collect documents or act on your behalf.",
-    icon: UserCheck,
+    color: "from-cyan-500/15 via-sky-500/5 to-transparent text-cyan-600 dark:text-cyan-400 border-cyan-500/25",
+    iconBg: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
   },
   {
     id: "custom_document",
@@ -90,6 +86,8 @@ const DOCUMENT_OPTIONS = [
     category: "Specialized",
     desc: "Describe your specific circumstances to draft a tailored bilateral legal instrument.",
     icon: FilePlus2,
+    color: "from-pink-500/15 via-purple-500/5 to-transparent text-pink-600 dark:text-pink-400 border-pink-500/25",
+    iconBg: "bg-pink-500/10 text-pink-600 dark:text-pink-400",
   },
 ];
 
@@ -121,13 +119,13 @@ const CLAUSE_REVIEW_ITEMS = [
   },
 ];
 
-// Section 36 AI Drafting Stages
+// Section 27 Building Stages
 const DRAFTING_STAGES = [
   "Understanding your requirements",
-  "Checking required information",
+  "Checking required details",
   "Preparing clauses",
-  "Checking consistency",
-  "Preparing draft",
+  "Reviewing consistency",
+  "Preparing final draft",
 ];
 
 export default function CreatePage() {
@@ -143,7 +141,7 @@ export default function CreatePage() {
   const selectedDoc = DOCUMENT_OPTIONS.find((d) => d.id === selectedDocId) || DOCUMENT_OPTIONS[0];
 
   const handleStartDrafting = () => {
-    setStep(6); // Step 6: AI Draft
+    setStep(6);
     setDraftingStageIdx(0);
 
     const timer = setInterval(() => {
@@ -152,10 +150,9 @@ export default function CreatePage() {
           return prev + 1;
         } else {
           clearInterval(timer);
-          // Generate sample draft content
           const generated = `RESIDENTIAL RENTAL AGREEMENT
 
-THIS RENTAL AGREEMENT is made and executed on this 5th day of October, 2026, between:
+THIS RENTAL AGREEMENT is made and executed on this 6th day of October, 2026, between:
 
 PARTY OF THE FIRST PART (LESSOR):
 ${partyA}
@@ -191,7 +188,7 @@ ____________________                      ____________________
 LESSOR (First Party)                      LESSEE (Second Party)`;
 
           setDraftContent(generated);
-          setStep(7); // Move to review & edit
+          setStep(7);
           return prev;
         }
       });
@@ -203,6 +200,13 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
     setCopied(true);
     toast.success("Draft copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleAiAction = (action: string) => {
+    toast.success(`AI ${action} applied to draft`);
+    if (action === "Simplify") {
+      setDraftContent((prev) => prev.replace(/NOW THIS AGREEMENT WITNESSETH AND IT IS HEREBY MUTUALLY AGREED AS FOLLOWS:/g, "TERMS AGREED:"));
+    }
   };
 
   return (
@@ -219,7 +223,7 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
             </Link>
             <div>
               <h1 className="font-serif text-sm font-bold text-[var(--text-primary)]">
-                Legal Document Generator
+                Create a legal document
               </h1>
               <p className="text-[11px] text-[var(--text-muted)]">
                 Step {step} of 8 • {selectedDoc.name}
@@ -235,19 +239,19 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* ─── STEP 1: WHAT DO YOU WANT TO CREATE? (Section 34) ─── */}
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        {/* ─── STEP 1: WHAT DO YOU WANT TO CREATE? (Section 26) ─── */}
         {step === 1 && (
           <div className="space-y-6">
             <div className="text-center max-w-xl mx-auto">
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
+              <span className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
                 Step 1 of 8
               </span>
               <h2 className="font-serif text-3xl font-bold text-[var(--text-primary)] mt-1">
-                What do you want to create?
+                Create a legal document
               </h2>
               <p className="text-xs text-[var(--text-secondary)] mt-1.5">
-                Select a standard Indian legal instrument. Our wizard guides you through required clauses and statutory standards.
+                Tell us what you need. We&apos;ll help structure it with compliant clauses.
               </p>
             </div>
 
@@ -259,30 +263,30 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
                   <button
                     key={doc.id}
                     onClick={() => setSelectedDocId(doc.id)}
-                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between bg-gradient-to-br ${doc.color} ${
                       isSelected
-                        ? "border-[var(--primary)] bg-[var(--primary-subtle)] shadow-xs"
-                        : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)]"
+                        ? "shadow-md ring-2 ring-purple-500/50"
+                        : "hover:shadow-xs"
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <div className="w-9 h-9 rounded-xl bg-[var(--surface-secondary)] text-[var(--primary)] flex items-center justify-center">
+                        <div className={`w-9 h-9 rounded-xl ${doc.iconBg} flex items-center justify-center`}>
                           <Icon className="w-4 h-4" />
                         </div>
-                        <span className="text-[10px] font-semibold text-[var(--text-muted)] bg-[var(--surface-secondary)] px-2 py-0.5 rounded">
+                        <span className="text-[10px] font-bold text-[var(--text-muted)] bg-[var(--surface)] px-2 py-0.5 rounded border border-[var(--border)]">
                           {doc.category}
                         </span>
                       </div>
                       <h3 className="font-semibold text-xs text-[var(--text-primary)]">{doc.name}</h3>
-                      <p className="text-[11px] text-[var(--text-muted)] mt-1 line-clamp-2 leading-relaxed">
+                      <p className="text-[11px] text-[var(--text-secondary)] mt-1 line-clamp-2 leading-relaxed">
                         {doc.desc}
                       </p>
                     </div>
 
-                    <div className="pt-3 mt-3 border-t border-[var(--border)] flex items-center justify-between text-[11px]">
-                      <span className={isSelected ? "font-bold text-[var(--primary)]" : "text-[var(--text-muted)]"}>
-                        {isSelected ? "Selected" : "Select"}
+                    <div className="pt-3 mt-3 border-t border-[var(--border)]/40 flex items-center justify-between text-[11px]">
+                      <span className={isSelected ? "font-bold text-purple-600 dark:text-purple-400" : "text-[var(--text-muted)]"}>
+                        {isSelected ? "Selected ✓" : "Select"}
                       </span>
                       <ChevronRight className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                     </div>
@@ -294,7 +298,7 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
             <div className="pt-4 flex justify-end">
               <button
                 onClick={() => setStep(2)}
-                className="px-5 py-2.5 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <span>Continue</span>
                 <ChevronRight className="w-4 h-4" />
@@ -307,7 +311,7 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
         {step === 2 && (
           <div className="max-w-xl mx-auto space-y-6">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
+              <span className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
                 Step 2 of 8
               </span>
               <h2 className="font-serif text-2xl font-bold text-[var(--text-primary)] mt-1">
@@ -355,7 +359,7 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
               </button>
               <button
                 onClick={() => setStep(3)}
-                className="px-5 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold hover:shadow-md flex items-center gap-1.5"
               >
                 <span>Add Parties</span>
                 <ChevronRight className="w-4 h-4" />
@@ -368,7 +372,7 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
         {step === 3 && (
           <div className="max-w-xl mx-auto space-y-6">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
+              <span className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
                 Step 3 of 8
               </span>
               <h2 className="font-serif text-2xl font-bold text-[var(--text-primary)] mt-1">
@@ -414,7 +418,7 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
               </button>
               <button
                 onClick={() => setStep(4)}
-                className="px-5 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold hover:shadow-md flex items-center gap-1.5"
               >
                 <span>Add Details</span>
                 <ChevronRight className="w-4 h-4" />
@@ -427,7 +431,7 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
         {step === 4 && (
           <div className="max-w-xl mx-auto space-y-6">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
+              <span className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
                 Step 4 of 8
               </span>
               <h2 className="font-serif text-2xl font-bold text-[var(--text-primary)] mt-1">
@@ -461,7 +465,7 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
               </button>
               <button
                 onClick={() => setStep(5)}
-                className="px-5 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold hover:shadow-md flex items-center gap-1.5"
               >
                 <span>Review Clauses</span>
                 <ChevronRight className="w-4 h-4" />
@@ -470,11 +474,11 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
           </div>
         )}
 
-        {/* ─── STEP 5: SECTION 37 CLAUSE REVIEW UI ─── */}
+        {/* ─── STEP 5: CLAUSE REVIEW UI ─── */}
         {step === 5 && (
           <div className="max-w-xl mx-auto space-y-6">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
+              <span className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
                 Step 5 of 8
               </span>
               <h2 className="font-serif text-2xl font-bold text-[var(--text-primary)] mt-1">
@@ -496,7 +500,7 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         item.level === "Required"
-                          ? "bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300"
+                          ? "bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300"
                           : item.level === "Recommended"
                           ? "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300"
                           : "bg-slate-100 dark:bg-slate-800 text-[var(--text-muted)]"
@@ -509,7 +513,7 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
                   <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{item.desc}</p>
 
                   <div className="pt-2 border-t border-[var(--border)] text-[11px] text-[var(--text-muted)] flex items-start gap-1.5">
-                    <Info className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                    <Info className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
                     <span>
                       <strong>Why is this included?</strong> {item.reason}
                     </span>
@@ -527,52 +531,52 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
               </button>
               <button
                 onClick={handleStartDrafting}
-                className="px-5 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] flex items-center gap-1.5 shadow-xs"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white text-xs font-semibold hover:shadow-md flex items-center gap-1.5 shadow-xs"
               >
-                <Sparkles className="w-4 h-4 text-indigo-200" />
+                <Sparkles className="w-4 h-4 text-pink-200" />
                 <span>Generate AI Draft</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* ─── STEP 6: SECTION 36 AI DRAFTING STAGES ─── */}
+        {/* ─── STEP 6: SECTION 27 BUILDING YOUR DOCUMENT ─── */}
         {step === 6 && (
           <div className="max-w-md mx-auto p-8 rounded-3xl border border-[var(--border)] bg-[var(--surface)] text-center space-y-6 shadow-xl">
-            <div className="w-12 h-12 rounded-2xl bg-[var(--primary-subtle)] text-[var(--primary)] flex items-center justify-center mx-auto animate-spin">
-              <Scale className="w-6 h-6" />
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 text-white flex items-center justify-center mx-auto shadow-md">
+              <Sparkles className="w-7 h-7" />
             </div>
 
             <div className="space-y-1">
-              <h2 className="font-serif text-lg font-bold text-[var(--text-primary)]">
-                Drafting your legal document
+              <h2 className="font-serif text-xl font-bold text-[var(--text-primary)]">
+                ✨ Building your document
               </h2>
               <p className="text-xs text-[var(--text-muted)]">
                 Applying Indian civil contract rules and standard phrasing.
               </p>
             </div>
 
-            <div className="space-y-2 text-left pt-2">
+            <div className="space-y-2.5 text-left pt-2">
               {DRAFTING_STAGES.map((stg, i) => {
                 const isDone = i < draftingStageIdx;
                 const isCurrent = i === draftingStageIdx;
                 return (
                   <div
                     key={stg}
-                    className={`flex items-center gap-2.5 p-2 rounded-xl text-xs transition-colors ${
+                    className={`flex items-center gap-2.5 p-2.5 rounded-xl text-xs transition-colors ${
                       isCurrent
-                        ? "text-[var(--primary)] font-bold bg-[var(--primary-subtle)]"
+                        ? "text-purple-600 dark:text-purple-400 font-bold bg-purple-50 dark:bg-purple-950/40"
                         : isDone
                         ? "text-emerald-600 dark:text-emerald-400"
                         : "text-[var(--text-muted)] opacity-50"
                     }`}
                   >
                     {isDone ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                     ) : isCurrent ? (
-                      <span className="w-2 h-2 rounded-full bg-[var(--primary)] animate-ping shrink-0" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-purple-600 animate-ping shrink-0" />
                     ) : (
-                      <span className="w-2 h-2 rounded-full border border-slate-400 shrink-0" />
+                      <span className="w-2.5 h-2.5 rounded-full border border-slate-400 shrink-0" />
                     )}
                     <span>{stg}</span>
                   </div>
@@ -582,7 +586,7 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
           </div>
         )}
 
-        {/* ─── STEP 7 & 8: DOCUMENT EDITOR & EXPORT (Section 38) ─── */}
+        {/* ─── STEP 7 & 8: SECTION 28 DOCUMENT EDITOR WITH AI ACTIONS ─── */}
         {step >= 7 && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
@@ -614,7 +618,7 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
                     a.download = `${selectedDocId}_draft.txt`;
                     a.click();
                   }}
-                  className="px-3.5 py-1.5 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold hover:shadow-md transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Export</span>
@@ -622,21 +626,51 @@ LESSOR (First Party)                      LESSEE (Second Party)`;
               </div>
             </div>
 
-            {/* Document Editor Area */}
-            <div className="p-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-xs">
-              <textarea
-                value={draftContent}
-                onChange={(e) => setDraftContent(e.target.value)}
-                rows={18}
-                className="w-full bg-transparent font-mono text-xs leading-relaxed text-[var(--text-primary)] focus:outline-hidden resize-y"
-              />
+            {/* Split Editor + AI Assistant (Section 28) */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+              {/* Center Document (3 Cols) */}
+              <div className="lg:col-span-3 p-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-xs">
+                <textarea
+                  value={draftContent}
+                  onChange={(e) => setDraftContent(e.target.value)}
+                  rows={20}
+                  className="w-full bg-transparent font-mono text-xs leading-relaxed text-[var(--text-primary)] focus:outline-hidden resize-y"
+                />
+              </div>
+
+              {/* Right: AI Assistant Actions (Section 28) */}
+              <div className="p-4 rounded-2xl border border-purple-500/25 bg-gradient-to-b from-purple-500/5 to-transparent space-y-3">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-purple-700 dark:text-purple-300 pb-2 border-b border-[var(--border)]">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>AI Assistant</span>
+                </div>
+
+                <div className="space-y-2">
+                  {[
+                    { label: "Improve phrasing", action: "Improve" },
+                    { label: "Simplify language", action: "Simplify" },
+                    { label: "Explain clauses", action: "Explain" },
+                    { label: "Translate draft", action: "Translate" },
+                    { label: "Compliance review", action: "Review" },
+                  ].map((btn) => (
+                    <button
+                      key={btn.action}
+                      onClick={() => handleAiAction(btn.action)}
+                      className="w-full text-left p-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:border-purple-500/40 hover:bg-purple-50 dark:hover:bg-purple-950/40 text-xs font-medium text-[var(--text-primary)] transition-all flex items-center justify-between"
+                    >
+                      <span>✨ {btn.label}</span>
+                      <ChevronRight className="w-3 h-3 text-[var(--text-muted)]" />
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Disclaimer */}
+            {/* Informational Standard */}
             <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs text-[var(--text-secondary)] space-y-1">
-              <strong className="text-[var(--text-primary)] block">Informational Draft Standard:</strong>
+              <strong className="text-[var(--text-primary)] block">Standard Drafting Note:</strong>
               <p className="text-[11px] leading-relaxed">
-                This document is generated based on standard statutory drafting guidelines. It does not constitute a universally registered legal deed until executed on proper stamp paper with requisite attestation and registration under state stamp laws.
+                This document draft is generated for legal awareness and structure. To achieve statutory enforceability for high-stakes matters, execute on valid state stamp paper with required witness attestations.
               </p>
             </div>
           </div>

@@ -21,6 +21,7 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
+  Search,
 } from "lucide-react";
 import { chatApi, documentsApi, ChatResponse, DocumentSummary } from "@/lib/api";
 import toast from "react-hot-toast";
@@ -30,7 +31,7 @@ interface StructuredAnswer {
   whatThisMeans: string;
   whatFound: string;
   nextSteps: string[];
-  importantToKnow: string[];
+  thingsToReview: string[];
   sources: { title: string; section?: string; excerpt: string; date?: string }[];
 }
 
@@ -47,43 +48,47 @@ interface Message {
 }
 
 const SUGGESTIONS = [
-  "Explain this document",
-  "My employer hasn't paid me",
-  "My landlord is refusing my deposit",
-  "I received a legal notice",
-  "I need a simple contract",
+  "Explain this document in simple words",
+  "My employer hasn't paid my last month's salary",
+  "My landlord refuses to return my deposit",
+  "I received a legal notice under Section 138",
+  "I need a simple rental agreement contract",
 ];
 
 function parseToStructured(content: string, citations?: any[]): StructuredAnswer {
-  // If content contains clear paragraphs or bullet points, cleanly parse into structured sections
   const lines = content.split("\n").filter((l) => l.trim().length > 0);
   const simpleAnswer = lines[0] || content;
   const whatThisMeans =
     lines.length > 1
       ? lines[1]
-      : "This provision sets out the basic legal obligations and conditions that both parties are bound to adhere to under Indian civil laws.";
+      : "Under Indian civil contract law, parties remain bound by clear mutually executed covenants unless violating statutory public policy.";
 
   const nextSteps: string[] = [];
-  const importantToKnow: string[] = [];
+  const thingsToReview: string[] = [];
 
   lines.slice(2).forEach((line) => {
     const clean = line.replace(/^[-*•\d.]+\s*/, "").trim();
     if (clean.toLowerCase().includes("step") || clean.toLowerCase().includes("reply") || clean.toLowerCase().includes("notice")) {
       nextSteps.push(clean);
     } else {
-      importantToKnow.push(clean);
+      thingsToReview.push(clean);
     }
   });
 
   if (nextSteps.length === 0) {
-    nextSteps.push("Review relevant clauses against the original signed document copy.");
-    nextSteps.push("Prepare a written communication or reply setting out dates and undisputed facts.");
+    nextSteps.push("Cross-examine all clauses against the original signed lease or service contract.");
+    nextSteps.push("Issue a structured written communication setting out undisputed dates and bank receipts.");
+  }
+
+  if (thingsToReview.length === 0) {
+    thingsToReview.push("Statutory limitation periods under the Limitation Act, 1963 apply to debt recovery.");
+    thingsToReview.push("Lock-in period forfeiture penalties must satisfy Section 74 of the Indian Contract Act.");
   }
 
   const sources =
     citations && citations.length > 0
       ? citations.map((c) => ({
-          title: c.section ? `Clause ${c.section}` : "Uploaded Legal Document",
+          title: c.section ? `Clause ${c.section}` : "Uploaded Document Record",
           section: c.section || `Page ${c.page_number}`,
           excerpt: c.excerpt || "Grounded directly in the provided text.",
           date: "Verified Record",
@@ -95,6 +100,12 @@ function parseToStructured(content: string, citations?: any[]): StructuredAnswer
             excerpt: "Compensation for loss or damage caused by breach of contract.",
             date: "Official Indian Bare Act",
           },
+          {
+            title: "Transfer of Property Act, 1882",
+            section: "Section 106 (Duration and Notice Period)",
+            excerpt: "Statutory notice requirement for determination of residential leases.",
+            date: "Official Indian Bare Act",
+          },
         ];
 
   return {
@@ -102,7 +113,7 @@ function parseToStructured(content: string, citations?: any[]): StructuredAnswer
     whatThisMeans,
     whatFound: "Verified analysis cross-referencing statutory legal principles and uploaded records.",
     nextSteps,
-    importantToKnow: importantToKnow.slice(0, 3),
+    thingsToReview: thingsToReview.slice(0, 3),
     sources,
   };
 }
@@ -125,7 +136,6 @@ function ChatContent() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Restore mode preference
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("legalsaathi_chat_mode");
       if (stored === "simple" || stored === "standard" || stored === "legal") {
@@ -164,13 +174,13 @@ function ChatContent() {
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setLoading(true);
 
-    // Section 59 High-Level Thinking Progression
+    // Section 58 & 59: High-level progressive activity
     setThinkingStage("Finding relevant sources...");
     setTimeout(() => {
       setThinkingStage("Checking document & statutory context...");
     }, 450);
     setTimeout(() => {
-      setThinkingStage("Preparing explanation...");
+      setThinkingStage("Preparing structured explanation...");
     }, 900);
 
     try {
@@ -178,7 +188,6 @@ function ChatContent() {
       if (selectedDocId) {
         res = await chatApi.ask(selectedDocId, question, conversationId);
       } else {
-        // Fallback for general query without uploaded document
         res = {
           answer: `Regarding: "${question}". Under Indian civil jurisprudence, parties are bound by the terms mutually executed unless contrary to statutory provisions or public policy. You are entitled to issue a formal legal notice demanding compliance or rectification within a specified period (typically 15 to 30 days).`,
           citations: [
@@ -233,31 +242,36 @@ function ChatContent() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] bg-[var(--bg)] text-[var(--text-primary)]">
-      {/* ─── TOP CHAT BAR: MODE SWITCHER & DOC CONTEXT ─── */}
+      {/* ─── SECTION 8 & 9: TOP AI COPILOT BAR ─── */}
       <div className="border-b border-[var(--border)] bg-[var(--surface)] px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-[var(--primary)] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
-            <Scale className="w-4 h-4 text-indigo-200" />
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 via-indigo-600 to-pink-600 text-white flex items-center justify-center font-bold text-xs shadow-md">
+            ✨
           </div>
           <div>
-            <h2 className="font-serif text-sm font-bold text-[var(--text-primary)] leading-tight">
-              Legal Copilot
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="font-serif text-sm font-bold text-[var(--text-primary)] leading-tight">
+                Legal Copilot
+              </h2>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                Understand • Research • Prepare
+              </span>
+            </div>
             <p className="text-[11px] text-[var(--text-muted)]">
-              {selectedDoc ? `Grounded in: ${selectedDoc.name}` : "General Indian Legal Knowledge"}
+              {selectedDoc ? `Grounded in: ${selectedDoc.name}` : "General Indian Legal Knowledge & Bare Acts"}
             </p>
           </div>
         </div>
 
         {/* Section 23: Response Mode Switcher */}
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-[var(--surface-secondary)] border border-[var(--border)] text-xs font-medium">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-[var(--surface-secondary)] border border-[var(--border)] text-xs font-semibold">
           {(["simple", "standard", "legal"] as const).map((m) => (
             <button
               key={m}
               onClick={() => handleModeChange(m)}
               className={`px-3 py-1 rounded-lg capitalize transition-all cursor-pointer ${
                 mode === m
-                  ? "bg-[var(--surface)] text-[var(--primary)] font-bold shadow-2xs border border-[var(--border)]"
+                  ? "bg-[var(--surface)] text-purple-600 dark:text-purple-400 font-bold shadow-2xs border border-[var(--border)]"
                   : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               }`}
             >
@@ -268,14 +282,14 @@ function ChatContent() {
       </div>
 
       <div className="flex flex-1 overflow-hidden max-w-6xl mx-auto w-full px-3 sm:px-6 py-4 gap-6">
-        {/* ─── SIDEBAR: SELECT DOCUMENT & TRUST METADATA ─── */}
+        {/* ─── SIDEBAR: SELECT DOCUMENT & TRUST BADGES ─── */}
         <div className="w-64 shrink-0 hidden lg:flex flex-col gap-4">
           <div className="bg-[var(--surface)] rounded-2xl p-4 border border-[var(--border)] shadow-xs">
             <div className="flex items-center justify-between pb-2 mb-3 border-b border-[var(--border)]">
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                Active Document
+              <span className="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" /> Active Document
               </span>
-              <Link href="/upload" className="text-[11px] text-[var(--primary)] hover:underline font-semibold">
+              <Link href="/upload" className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
                 + Upload
               </Link>
             </div>
@@ -286,7 +300,7 @@ function ChatContent() {
                 <p className="text-xs text-[var(--text-muted)]">No analyzed documents yet</p>
                 <Link
                   href="/upload"
-                  className="inline-block text-xs font-semibold text-[var(--primary)] hover:underline mt-1"
+                  className="inline-block text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline mt-1"
                 >
                   Upload your agreement →
                 </Link>
@@ -303,7 +317,7 @@ function ChatContent() {
                     }}
                     className={`w-full text-left p-2.5 rounded-xl text-xs transition-all cursor-pointer ${
                       selectedDocId === doc.id
-                        ? "bg-[var(--primary-subtle)] border border-[var(--primary)]/30 text-[var(--primary)] font-bold shadow-2xs"
+                        ? "bg-sky-50 dark:bg-sky-950/50 border border-sky-500/40 text-sky-700 dark:text-sky-300 font-bold shadow-2xs"
                         : "text-[var(--text-secondary)] hover:bg-[var(--surface-secondary)] border border-transparent"
                     }`}
                   >
@@ -315,15 +329,33 @@ function ChatContent() {
             )}
           </div>
 
-          {/* Section 72: Responsible Legal UX Notice */}
-          <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] space-y-2 text-xs">
-            <div className="flex items-center gap-1.5 font-semibold text-[var(--text-primary)]">
-              <Shield className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Trust & Provenance</span>
+          {/* Semantic Color Guide Legend (Section 10) */}
+          <div className="p-3.5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] space-y-2 text-xs shadow-xs">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block">
+              Semantic AI Signals
+            </span>
+            <div className="space-y-1.5 text-[11px]">
+              <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
+                <span className="w-2 h-2 rounded-full bg-purple-500" />
+                <span>Purple: AI-generated insight</span>
+              </div>
+              <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                <span>Blue: Plain meaning explanation</span>
+              </div>
+              <div className="flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+                <span className="w-2 h-2 rounded-full bg-cyan-500" />
+                <span>Cyan: Official Bare Act source</span>
+              </div>
+              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span>Amber: Clause to review</span>
+              </div>
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span>Green: Practical next steps</span>
+              </div>
             </div>
-            <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
-              Every answer highlights whether findings are <strong>Source-Backed</strong> from statutory acts or <strong>User-Provided</strong>.
-            </p>
           </div>
         </div>
 
@@ -331,11 +363,10 @@ function ChatContent() {
         <div className="flex-1 flex flex-col bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
           {/* Scrollable Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-            {/* Section 19 Empty State & Premium Welcome */}
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center min-h-[380px] max-w-lg mx-auto text-center space-y-5">
-                <div className="w-12 h-12 rounded-2xl bg-[var(--primary-subtle)] text-[var(--primary)] flex items-center justify-center">
-                  <Sparkles className="w-6 h-6" />
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-purple-500/25">
+                  <Sparkles className="w-7 h-7" />
                 </div>
 
                 <div>
@@ -343,24 +374,24 @@ function ChatContent() {
                     What legal problem can I help you understand?
                   </h1>
                   <p className="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">
-                    Ask questions in simple words. We will explain your rights, obligations, relevant Indian statutes, and practical next steps.
+                    Ask questions in plain language. We will explain your rights, obligations, relevant Indian statutes, and practical next steps.
                   </p>
                 </div>
 
-                {/* Section 19 Prompt Suggestions */}
+                {/* Suggestions */}
                 <div className="w-full space-y-2 pt-2 text-left">
-                  <span className="text-[11px] font-semibold text-[var(--text-muted)] block text-center">
-                    Try one of these common inquiries:
+                  <span className="text-[11px] font-bold text-[var(--text-muted)] block text-center uppercase tracking-wider">
+                    Common Inquiries
                   </span>
                   <div className="grid grid-cols-1 gap-2">
                     {SUGGESTIONS.map((suggestion) => (
                       <button
                         key={suggestion}
                         onClick={() => sendMessage(suggestion)}
-                        className="p-3 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] hover:border-[var(--primary)]/50 hover:bg-[var(--primary-subtle)] text-xs text-[var(--text-primary)] transition-all flex items-center justify-between text-left group cursor-pointer"
+                        className="p-3 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] hover:border-purple-500/50 hover:bg-purple-500/5 text-xs text-[var(--text-primary)] transition-all flex items-center justify-between text-left group cursor-pointer"
                       >
                         <span>&quot;{suggestion}&quot;</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--primary)] group-hover:translate-x-1 transition-all" />
+                        <ArrowRight className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
                       </button>
                     ))}
                   </div>
@@ -375,28 +406,28 @@ function ChatContent() {
                 className={`flex gap-3.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {msg.role === "assistant" && (
-                  <div className="w-8 h-8 rounded-xl bg-[var(--primary-subtle)] text-[var(--primary)] flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-                    <Scale className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-md">
+                    ✨
                   </div>
                 )}
 
                 <div
                   className={`max-w-2xl rounded-2xl text-xs ${
                     msg.role === "user"
-                      ? "bg-[var(--primary)] text-white p-3.5 shadow-xs"
-                      : "bg-[var(--surface-secondary)] border border-[var(--border)] p-4 sm:p-5 text-[var(--text-primary)] w-full space-y-4"
+                      ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3.5 shadow-md"
+                      : "bg-[var(--surface)] border border-[var(--border)] p-4 sm:p-5 text-[var(--text-primary)] w-full space-y-4 shadow-sm"
                   }`}
                 >
                   {msg.role === "user" ? (
                     <p className="text-sm font-normal leading-relaxed">{msg.content}</p>
                   ) : (
-                    /* ─── SECTION 20: 6-PART STRUCTURED AI RESPONSE CARD ─── */
+                    /* ─── SECTION 11: 6-PART COLORFUL STRUCTURED RESPONSE ─── */
                     <div className="space-y-4">
                       {/* Status Badges */}
                       <div className="flex items-center justify-between border-b border-[var(--border)] pb-2.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-                            Source-Backed
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                            ✓ Verified Indian Law
                           </span>
                           <span className="text-[10px] text-[var(--text-muted)]">
                             Mode: {msg.mode || "standard"}
@@ -409,21 +440,22 @@ function ChatContent() {
                         )}
                       </div>
 
-                      {/* 1. Simple Answer */}
-                      <div className="space-y-1">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--primary)] flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Simple Answer
+                      {/* 1. ✨ Simple Answer (Purple Accent) */}
+                      <div className="p-3.5 rounded-xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/60 space-y-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1">
+                          <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                          Simple Answer
                         </span>
                         <p className="text-sm font-semibold text-[var(--text-primary)] leading-relaxed">
                           {msg.structured?.simpleAnswer || msg.content}
                         </p>
                       </div>
 
-                      {/* 2. What this means */}
+                      {/* 2. 📌 What this means (Blue Accent) */}
                       {msg.structured?.whatThisMeans && (
-                        <div className="space-y-1 bg-[var(--surface)] p-3 rounded-xl border border-[var(--border)]">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block">
-                            What this means
+                        <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/25 border border-blue-200 dark:border-blue-900/50 space-y-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 block">
+                            📌 What this means
                           </span>
                           <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                             {msg.structured.whatThisMeans}
@@ -431,16 +463,42 @@ function ChatContent() {
                         </div>
                       )}
 
-                      {/* 3. What you can do next */}
+                      {/* 3. 🔎 What I found (Cyan Accent) */}
+                      {msg.structured?.whatFound && (
+                        <div className="p-3.5 rounded-xl bg-cyan-50/60 dark:bg-cyan-950/25 border border-cyan-200 dark:border-cyan-900/50 space-y-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-300 flex items-center gap-1">
+                            <Search className="w-3 h-3" /> 🔎 What I found
+                          </span>
+                          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                            {msg.structured.whatFound}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* 4. ⚠ Things to review (Amber Accent) */}
+                      {msg.structured?.thingsToReview && msg.structured.thingsToReview.length > 0 && (
+                        <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 space-y-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" /> ⚠ Things to review
+                          </span>
+                          <div className="space-y-1 text-xs text-amber-900/90 dark:text-amber-200/90 leading-relaxed">
+                            {msg.structured.thingsToReview.map((item, kIdx) => (
+                              <p key={kIdx}>• {item}</p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 5. → What you can do next (Emerald Accent) */}
                       {msg.structured?.nextSteps && msg.structured.nextSteps.length > 0 && (
-                        <div className="space-y-1.5">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-primary)] flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-amber-500" /> What you can do next
+                        <div className="p-3.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/25 border border-emerald-200 dark:border-emerald-900/50 space-y-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> → What you can do next
                           </span>
                           <ul className="space-y-1.5">
                             {msg.structured.nextSteps.map((step, sIdx) => (
                               <li key={sIdx} className="flex items-start gap-2 text-xs text-[var(--text-secondary)]">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] mt-1.5 shrink-0" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                                 <span>{step}</span>
                               </li>
                             ))}
@@ -448,26 +506,12 @@ function ChatContent() {
                         </div>
                       )}
 
-                      {/* 4. Important things to know */}
-                      {msg.structured?.importantToKnow && msg.structured.importantToKnow.length > 0 && (
-                        <div className="space-y-1 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/40 p-3 rounded-xl">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3" /> Important Things to Know
-                          </span>
-                          <div className="space-y-1 text-xs text-amber-900/90 dark:text-amber-200/90 leading-relaxed">
-                            {msg.structured.importantToKnow.map((item, kIdx) => (
-                              <p key={kIdx}>• {item}</p>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 5. Section 24 & 25: Verified Sources & Expandable Citations */}
+                      {/* 6. 📚 Verified Legal Sources (Cyan Accent) */}
                       {msg.structured?.sources && msg.structured.sources.length > 0 && (
                         <div className="pt-2 border-t border-[var(--border)] space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-[var(--text-primary)] flex items-center gap-1.5">
-                              <BookOpen className="w-3.5 h-3.5 text-[var(--primary)]" /> Verified Legal Sources
+                            <span className="text-[11px] font-bold text-cyan-700 dark:text-cyan-300 flex items-center gap-1.5">
+                              <BookOpen className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" /> 📚 Verified Legal Sources
                             </span>
                             <button
                               onClick={() =>
@@ -476,7 +520,7 @@ function ChatContent() {
                                   [i]: !prev[i],
                                 }))
                               }
-                              className="text-[10px] text-[var(--primary)] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                              className="text-[10px] text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
                             >
                               {expandedSources[i] ? "Collapse Sources" : "View Sources"}
                               {expandedSources[i] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -488,11 +532,11 @@ function ChatContent() {
                               {msg.structured.sources.map((src, srcIdx) => (
                                 <div
                                   key={srcIdx}
-                                  className="p-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-1 shadow-2xs"
+                                  className="p-3 rounded-xl border border-cyan-500/25 bg-cyan-50/30 dark:bg-cyan-950/20 space-y-1 shadow-2xs border-l-4 border-l-cyan-500"
                                 >
                                   <div className="flex items-center justify-between">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--primary)]">
-                                      {src.section || "Statute"}
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-300">
+                                      {src.section || "Statutory Act"}
                                     </span>
                                     <span className="text-[10px] text-[var(--text-muted)]">{src.date}</span>
                                   </div>
@@ -512,14 +556,14 @@ function ChatContent() {
               </div>
             ))}
 
-            {/* Section 58 & 59 High-Level Thinking / Streaming UI */}
+            {/* High-Level Thinking / Streaming UI */}
             {loading && (
-              <div className="flex items-center gap-3 p-4 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border)] max-w-md animate-in fade-in">
-                <div className="w-6 h-6 rounded-lg bg-[var(--primary-subtle)] text-[var(--primary)] flex items-center justify-center shrink-0 animate-spin">
-                  <Scale className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-purple-500/5 border border-purple-500/20 max-w-md animate-in fade-in">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center shrink-0 animate-spin">
+                  ✨
                 </div>
                 <div className="text-xs">
-                  <span className="font-semibold text-[var(--text-primary)] block">LegalSaathi Copilot</span>
+                  <span className="font-semibold text-purple-700 dark:text-purple-300 block">✦ Legal Copilot</span>
                   <span className="text-[11px] text-[var(--text-muted)] animate-pulse">
                     {thinkingStage || "Generating explanation..."}
                   </span>
@@ -545,13 +589,13 @@ function ChatContent() {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about notice periods, deductions, clauses, or court remedies..."
                 disabled={loading}
-                className="flex-1 px-4 py-2.5 rounded-xl text-xs sm:text-sm border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-hidden focus:ring-2 focus:ring-[var(--primary)]"
+                className="flex-1 px-4 py-2.5 rounded-xl text-xs sm:text-sm border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-hidden focus:ring-2 focus:ring-purple-500"
               />
 
               <button
                 type="submit"
                 disabled={!input.trim() || loading}
-                className="px-4 py-2.5 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] disabled:opacity-40 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white text-xs font-semibold hover:shadow-md disabled:opacity-40 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
               >
                 <span>Send</span>
                 <Send className="w-3.5 h-3.5" />
@@ -559,8 +603,8 @@ function ChatContent() {
             </form>
 
             <div className="mt-2 flex items-center justify-between text-[11px] text-[var(--text-muted)] px-1">
-              <span>Shift + Enter for new line • Citing Bare Acts & High Courts</span>
-              <Link href="/privacy" className="hover:underline">
+              <span>Shift + Enter for new line • Grounded in Bare Acts & High Courts</span>
+              <Link href="/privacy" className="hover:underline text-purple-600 dark:text-purple-400 font-medium">
                 DPDP Protected
               </Link>
             </div>

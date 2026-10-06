@@ -404,33 +404,50 @@ export default function CaseWorkspacePage({ params }: { params: Promise<{ id: st
       )}
 
       {/* Case Header */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6DFD5] shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider bg-[#F7F2E8] text-[#8C6D23] px-2.5 py-0.5 rounded-md">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-base">
+                {workspace.issue_type?.toLowerCase().includes("rent") || workspace.issue_type?.toLowerCase().includes("tenant")
+                  ? "🏠"
+                  : workspace.issue_type?.toLowerCase().includes("cheque")
+                  ? "💳"
+                  : workspace.issue_type?.toLowerCase().includes("consumer")
+                  ? "🛒"
+                  : workspace.issue_type?.toLowerCase().includes("employ")
+                  ? "💼"
+                  : "⚖"}
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full border border-indigo-200">
                 {workspace.issue_type}
               </span>
-              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                workspace.urgency === "critical" ? "bg-red-100 text-red-800" :
-                workspace.urgency === "high" ? "bg-amber-100 text-amber-800" :
-                "bg-blue-100 text-blue-800"
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Active
+              </span>
+              <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                workspace.urgency === "critical"
+                  ? "bg-rose-50 text-rose-800 border border-rose-200"
+                  : workspace.urgency === "high"
+                  ? "bg-amber-50 text-amber-800 border border-amber-200"
+                  : "bg-sky-50 text-sky-800 border border-sky-200"
               }`}>
                 {workspace.urgency.toUpperCase()} URGENCY
               </span>
             </div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#1A2B49] mt-1.5">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
               {workspace.title}
             </h1>
-            <p className="text-xs text-[#706E6B] mt-1">
-              Jurisdiction: {workspace.city ? `${workspace.city}, ` : ""}{workspace.state || "India"} • Created on {workspace.created_at ? new Date(workspace.created_at).toLocaleDateString() : "Recent"}
+            <p className="text-xs text-slate-500 font-medium">
+              {workspace.city ? `${workspace.city} • ` : "Delhi • "} {workspace.state || "India"} • Civil & Statutory Matter • Created {workspace.created_at ? new Date(workspace.created_at).toLocaleDateString() : "Recent"}
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveTab("lawyer")}
-              className="px-4 py-2 rounded-xl bg-[#8C6D23] text-white text-xs font-semibold hover:bg-[#73581B] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-emerald-500/10"
             >
               <UserCheck className="w-4 h-4" />
               <span>Lawyer Review</span>
@@ -438,20 +455,20 @@ export default function CaseWorkspacePage({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 border-b border-[#F2ECE3] overflow-x-auto pt-2 scrollbar-none">
+        {/* Navigation Tabs with Vibrant Active Indicators */}
+        <div className="flex items-center gap-1.5 border-b border-slate-100 overflow-x-auto pt-2 scrollbar-none">
           {[
-            { id: "overview", label: "Overview", icon: Briefcase },
-            { id: "orchestrator", label: "Multi-Agent AI", icon: Cpu, badge: "V3" },
-            { id: "facts", label: `Fact Store (${facts.length})`, icon: CheckCircle2 },
-            { id: "deadlines", label: `Deadlines (${deadlines.length})`, icon: CalendarClock },
-            { id: "timeline", label: `Timeline (${workspace.timeline.length})`, icon: Clock },
-            { id: "evidence", label: `Evidence (${workspace.evidence.length})`, icon: Shield },
-            { id: "documents", label: `Documents (${workspace.documents.length})`, icon: FileText },
-            { id: "research", label: "Legal AI & RAG", icon: Sparkles },
-            { id: "drafts", label: `Drafts (${workspace.generated_drafts.length})`, icon: FileCheck },
-            { id: "lawyer", label: "Lawyer Escalation", icon: UserCheck },
-            { id: "notes", label: `Notes (${workspace.notes.length})`, icon: MessageSquare },
+            { id: "overview", label: "Overview", icon: Briefcase, activeStyle: "border-indigo-600 text-indigo-700 bg-indigo-50/70" },
+            { id: "orchestrator", label: "Multi-Agent AI", icon: Cpu, badge: "V4", activeStyle: "border-purple-600 text-purple-700 bg-purple-50/70" },
+            { id: "facts", label: `Fact Store (${facts.length})`, icon: CheckCircle2, activeStyle: "border-emerald-600 text-emerald-700 bg-emerald-50/70" },
+            { id: "deadlines", label: `Deadlines (${deadlines.length})`, icon: CalendarClock, activeStyle: "border-amber-600 text-amber-700 bg-amber-50/70" },
+            { id: "timeline", label: `Timeline (${workspace.timeline.length})`, icon: Clock, activeStyle: "border-violet-600 text-violet-700 bg-violet-50/70" },
+            { id: "evidence", label: `Evidence (${workspace.evidence.length})`, icon: Shield, activeStyle: "border-cyan-600 text-cyan-700 bg-cyan-50/70" },
+            { id: "documents", label: `Documents (${workspace.documents.length})`, icon: FileText, activeStyle: "border-sky-600 text-sky-700 bg-sky-50/70" },
+            { id: "research", label: "Legal AI & RAG", icon: Sparkles, activeStyle: "border-teal-600 text-teal-700 bg-teal-50/70" },
+            { id: "drafts", label: `Drafts (${workspace.generated_drafts.length})`, icon: FileCheck, activeStyle: "border-pink-600 text-pink-700 bg-pink-50/70" },
+            { id: "lawyer", label: "Lawyer Escalation", icon: UserCheck, activeStyle: "border-emerald-600 text-emerald-700 bg-emerald-50/70" },
+            { id: "notes", label: `Notes (${workspace.notes.length})`, icon: MessageSquare, activeStyle: "border-slate-600 text-slate-700 bg-slate-100" },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -459,16 +476,16 @@ export default function CaseWorkspacePage({ params }: { params: Promise<{ id: st
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold border-b-2 rounded-t-xl transition-all cursor-pointer whitespace-nowrap ${
                   active
-                    ? "border-[#1A2B49] text-[#1A2B49] font-bold"
-                    : "border-transparent text-[#706E6B] hover:text-[#1A2B49] hover:border-[#DDD5C7]"
+                    ? `${tab.activeStyle} font-bold shadow-xs`
+                    : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50"
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${active ? "text-[#8C6D23]" : ""}`} />
+                <Icon className="w-3.5 h-3.5" />
                 {tab.label}
                 {tab.badge && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-[#E6C687]/40 text-[#8C6D23]">
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700">
                     {tab.badge}
                   </span>
                 )}
@@ -1089,27 +1106,31 @@ export default function CaseWorkspacePage({ params }: { params: Promise<{ id: st
 
           {/* Chronological Event List */}
           {workspace.timeline.length > 0 ? (
-            <div className="relative pl-6 border-l-2 border-[#DDD0BC] space-y-6 ml-4">
+            <div className="relative pl-7 ml-4 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[2px] before:bg-gradient-to-b before:from-indigo-500 before:via-purple-500 before:to-cyan-500">
               {workspace.timeline.map((ev, idx) => (
                 <div key={ev.id || idx} className="relative group">
-                  <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-[#1A2B49] border-2 border-white ring-2 ring-[#E6DFD5]" />
-                  <div className="p-4 rounded-2xl bg-white border border-[#E6DFD5] shadow-2xs space-y-1">
+                  <div className="absolute -left-[27px] top-2 w-4 h-4 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 border-2 border-white shadow-sm ring-2 ring-indigo-200" />
+                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs hover:shadow-sm hover:border-indigo-200 transition-all space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-mono font-bold text-[#8C6D23] bg-[#F7F2E8] px-2 py-0.5 rounded">
+                      <span className="text-xs font-mono font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
                         {ev.date_display || ev.event_date || "Approximate"}
                         {ev.is_approximate ? " (Approx)" : ""}
                       </span>
-                      <span className="text-[10px] text-[#706E6B]">Source: {ev.source || "User"}</span>
+                      <span className="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                        Source: {ev.source || "User"}
+                      </span>
                     </div>
-                    <h4 className="font-semibold text-sm text-[#1A2B49]">{ev.title}</h4>
-                    {ev.description && <p className="text-xs text-[#706E6B]">{ev.description}</p>}
+                    <h4 className="font-serif font-bold text-base text-slate-900">{ev.title}</h4>
+                    {ev.description && <p className="text-xs text-slate-600 leading-relaxed font-sans">{ev.description}</p>}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="p-8 rounded-3xl bg-white border border-[#E6DFD5] text-center text-xs text-[#706E6B]">
-              No timeline milestones recorded yet. Click &quot;Add Event&quot; or &quot;AI Extract Milestones&quot;.
+            <div className="p-12 rounded-3xl bg-white border border-slate-200 text-center space-y-2 shadow-xs">
+              <Clock className="w-8 h-8 text-purple-400 mx-auto stroke-[1.5]" />
+              <h4 className="font-serif font-bold text-slate-900 text-base">No timeline milestones yet</h4>
+              <p className="text-xs text-slate-500">Click &quot;Add Event&quot; or &quot;AI Extract Milestones&quot; to build the chronology.</p>
             </div>
           )}
         </div>
@@ -1267,25 +1288,47 @@ export default function CaseWorkspacePage({ params }: { params: Promise<{ id: st
 
           {/* Evidence Items Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {workspace.evidence.map((e) => (
-              <div key={e.id} className="p-5 rounded-2xl bg-white border border-[#E6DFD5] shadow-2xs space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-[#F7F2E8] text-[#8C6D23] px-2 py-0.5 rounded">
-                      {e.evidence_type}
+            {workspace.evidence.map((e) => {
+              const type = e.evidence_type?.toLowerCase() || "";
+              const config =
+                type.includes("receipt") || type.includes("bank")
+                  ? { icon: "🧾", bg: "bg-emerald-50/40 border-emerald-200", badge: "bg-emerald-100 text-emerald-800", label: "Receipt / Bank" }
+                  : type.includes("agreement") || type.includes("contract")
+                  ? { icon: "📄", bg: "bg-blue-50/40 border-blue-200", badge: "bg-blue-100 text-blue-800", label: "Agreement" }
+                  : type.includes("screenshot") || type.includes("chat") || type.includes("whatsapp")
+                  ? { icon: "💬", bg: "bg-cyan-50/40 border-cyan-200", badge: "bg-cyan-100 text-cyan-800", label: "Message / Screenshot" }
+                  : type.includes("audio") || type.includes("voice") || type.includes("call")
+                  ? { icon: "🎙", bg: "bg-purple-50/40 border-purple-200", badge: "bg-purple-100 text-purple-800", label: "Voice / Audio" }
+                  : type.includes("photo") || type.includes("image")
+                  ? { icon: "📸", bg: "bg-amber-50/40 border-amber-200", badge: "bg-amber-100 text-amber-800", label: "Property Photo" }
+                  : { icon: "📄", bg: "bg-slate-50 border-slate-200", badge: "bg-slate-200 text-slate-800", label: e.evidence_type };
+
+              return (
+                <div key={e.id} className={`p-5 rounded-2xl border ${config.bg} shadow-xs space-y-3 transition-all hover:shadow-sm`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl p-2 rounded-xl bg-white shadow-xs border border-slate-100">{config.icon}</span>
+                      <div>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${config.badge}`}>
+                          {config.label}
+                        </span>
+                        <h4 className="font-serif font-bold text-sm text-slate-900 mt-1">{e.name}</h4>
+                      </div>
+                    </div>
+                    <span className="text-[11px] text-slate-500 font-mono bg-white/80 px-2 py-0.5 rounded border border-slate-200/60">
+                      {e.evidence_date || "Date logged"}
                     </span>
-                    <h4 className="font-semibold text-sm text-[#1A2B49] mt-1">{e.name}</h4>
                   </div>
-                  <span className="text-[11px] text-[#706E6B] font-mono">{e.evidence_date || "Date unknown"}</span>
+                  <p className="text-xs text-slate-700 leading-relaxed font-sans">{e.description}</p>
+                  {e.user_notes && (
+                    <div className="text-[11px] text-slate-600 bg-white/90 p-2.5 rounded-xl border border-slate-200/80">
+                      <span className="font-semibold text-slate-900">Note: </span>
+                      <span>{e.user_notes}</span>
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs text-[#55524E]">{e.description}</p>
-                {e.user_notes && (
-                  <p className="text-[11px] text-[#706E6B] bg-[#FDFAF5] p-2 rounded-lg border border-[#F2ECE3]">
-                    Note: {e.user_notes}
-                  </p>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

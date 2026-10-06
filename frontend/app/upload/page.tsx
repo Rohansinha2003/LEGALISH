@@ -15,19 +15,18 @@ import {
   ArrowLeft,
   ShieldCheck,
   Lock,
-  RefreshCw,
-  HelpCircle,
-  Clock,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { documentsApi } from "@/lib/api";
 import toast from "react-hot-toast";
 
-const REALISTIC_STAGES = [
-  { id: "uploaded", label: "Document uploaded" },
-  { id: "reading", label: "Reading document" },
-  { id: "extracting", label: "Extracting important information" },
-  { id: "understanding", label: "Understanding legal clauses" },
+// Section 15: Multi-stage progress indicators
+const PROGRESS_STAGES = [
+  { id: "upload", label: "Upload complete" },
+  { id: "extracted", label: "Text extracted" },
+  { id: "clauses", label: "Important clauses found" },
+  { id: "understanding", label: "Understanding legal content" },
   { id: "explaining", label: "Preparing simple explanation" },
 ];
 
@@ -47,13 +46,12 @@ export default function UploadPage() {
   const [stageIndex, setStageIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  // Poll status while cycling through realistic progress stages
   useEffect(() => {
     if (!documentId) return;
 
     // Advance realistic stages every 800ms
     const stageTimer = setInterval(() => {
-      setStageIndex((prev) => (prev < REALISTIC_STAGES.length - 1 ? prev + 1 : prev));
+      setStageIndex((prev) => (prev < PROGRESS_STAGES.length - 1 ? prev + 1 : prev));
     }, 800);
 
     const pollInterval = setInterval(async () => {
@@ -62,9 +60,9 @@ export default function UploadPage() {
         if (res.status === "ready") {
           clearInterval(pollInterval);
           clearInterval(stageTimer);
-          setStageIndex(REALISTIC_STAGES.length);
+          setStageIndex(PROGRESS_STAGES.length);
           toast.success("Document analyzed successfully!");
-          setTimeout(() => router.push(`/analyze/${documentId}`), 800);
+          setTimeout(() => router.push(`/analyze/${documentId}`), 700);
         } else if (res.status === "error") {
           clearInterval(pollInterval);
           clearInterval(stageTimer);
@@ -129,7 +127,7 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)]">
-      {/* ─── HEADER ─── */}
+      {/* ─── TOP ACTION BAR ─── */}
       <div className="border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -144,107 +142,114 @@ export default function UploadPage() {
 
           <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
             <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span>DPDP Encrypted</span>
+            <span className="font-semibold text-emerald-700 dark:text-emerald-300">DPDP Encrypted</span>
           </div>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-12">
         <div className="text-center mb-8">
-          <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
-            Document Intelligence
+          <span className="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+            ✦ Document Intelligence
           </span>
           <h1 className="font-serif text-3xl font-bold text-[var(--text-primary)] mt-1">
             Understand your legal document
           </h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1.5">
-            Get an instant plain-language breakdown of clauses, responsibilities, and areas worth reviewing.
+          <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-1.5">
+            Instant plain-language breakdown of clauses, responsibilities, and areas worth reviewing.
           </p>
         </div>
 
-        {/* ─── UPLOAD VIEW (Section 26) ─── */}
+        {/* ─── SECTION 14: DROPZONE WITH ANIMATED GRADIENT BORDER ─── */}
         {!uploading ? (
           <div className="space-y-6">
             <div
-              className={`p-8 rounded-3xl border-2 border-dashed transition-all text-center cursor-pointer ${
-                dragOver
-                  ? "border-[var(--primary)] bg-[var(--primary-subtle)]"
-                  : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--primary)]/60"
+              className={`animated-gradient-border p-[1.5px] shadow-lg transition-all ${
+                dragOver ? "scale-[1.01]" : ""
               }`}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOver(true);
-              }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={onDrop}
-              onClick={() => document.getElementById("file-upload-input")?.click()}
             >
-              <input
-                id="file-upload-input"
-                type="file"
-                className="hidden"
-                accept=".pdf,.docx,.png,.jpg,.jpeg"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleFile(file);
+              <div
+                className="p-8 sm:p-10 rounded-[1.25rem] bg-[var(--surface)] border border-[var(--border)] text-center cursor-pointer hover:bg-[var(--surface-secondary)]/50 transition-colors"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOver(true);
                 }}
-              />
+                onDragLeave={() => setDragOver(false)}
+                onDrop={onDrop}
+                onClick={() => document.getElementById("file-upload-input")?.click()}
+              >
+                <input
+                  id="file-upload-input"
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.docx,.png,.jpg,.jpeg"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFile(file);
+                  }}
+                />
 
-              {selectedFile ? (
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-14 h-14 rounded-2xl bg-[var(--primary-subtle)] text-[var(--primary)] flex items-center justify-center">
-                    <FileText className="w-7 h-7" />
+                {selectedFile ? (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-14 h-14 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                      <FileText className="w-7 h-7" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-[var(--text-primary)]">{selectedFile.name}</h3>
+                      <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Ready for analysis
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedFile(null);
+                      }}
+                      className="mt-1 text-xs text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 font-semibold"
+                    >
+                      <X className="w-3.5 h-3.5" /> Remove file
+                    </button>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-[var(--text-primary)]">{selectedFile.name}</h3>
-                    <p className="text-xs text-[var(--text-muted)]">
-                      {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Ready for analysis
-                    </p>
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/15 via-purple-500/15 to-cyan-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-xs">
+                      <Sparkles className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-[var(--text-primary)]">
+                        Drop your legal document here
+                      </h2>
+                      <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                        or <span className="text-indigo-600 dark:text-indigo-400 font-semibold underline">Choose a file</span> from your device
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1 text-[11px] font-mono text-[var(--text-muted)]">
+                      <span className="px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)]">PDF</span>
+                      <span className="px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)]">DOCX</span>
+                      <span className="px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)]">JPG</span>
+                      <span className="px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)]">PNG</span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 font-medium pt-2">
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>Your document stays private</span>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedFile(null);
-                    }}
-                    className="mt-1 text-xs text-[var(--error)] hover:underline flex items-center gap-1 font-semibold"
-                  >
-                    <X className="w-3.5 h-3.5" /> Remove file
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-14 h-14 rounded-2xl bg-[var(--surface-secondary)] text-[var(--primary)] flex items-center justify-center shadow-xs">
-                    <Upload className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-[var(--text-primary)]">
-                      Drop your legal document here
-                    </h2>
-                    <p className="text-xs text-[var(--text-muted)] mt-0.5">
-                      or <span className="text-[var(--primary)] font-semibold underline">Choose a file</span> from your device
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 pt-1 text-[11px] font-mono text-[var(--text-muted)]">
-                    <span className="px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)]">PDF</span>
-                    <span className="px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)]">DOCX</span>
-                    <span className="px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)]">JPG</span>
-                    <span className="px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)]">PNG</span>
-                  </div>
-                  <p className="text-[11px] text-[var(--text-muted)]">Maximum file size: 20MB</p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
-            {/* Section 56 Error State */}
+            {/* Error Message */}
             {error && (
-              <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-xs text-red-900 dark:text-red-300 space-y-2">
+              <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-xs text-rose-900 dark:text-rose-300 space-y-2">
                 <div className="flex items-center gap-2 font-semibold">
-                  <AlertTriangle className="w-4 h-4 text-[var(--error)] shrink-0" />
+                  <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
                   <span>We couldn&apos;t process this document.</span>
                 </div>
-                <p className="text-[11px] leading-relaxed text-red-800 dark:text-red-400">{error}</p>
-                <div className="pt-2 flex items-center gap-3 border-t border-red-200/60 dark:border-red-900/60">
+                <p className="text-[11px] leading-relaxed text-rose-800 dark:text-rose-400">{error}</p>
+                <div className="pt-2 flex items-center gap-3 border-t border-rose-200/60 dark:border-rose-900/60">
                   <button
                     onClick={() => {
                       setError(null);
@@ -270,18 +275,18 @@ export default function UploadPage() {
               </div>
             )}
 
-            {/* Submit Button */}
+            {/* Analyze Button */}
             {selectedFile && !error && (
               <button
                 onClick={handleUpload}
-                className="w-full py-3.5 rounded-2xl bg-[var(--primary)] text-white text-sm font-semibold hover:bg-[var(--primary-hover)] transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 text-white text-sm font-semibold hover:shadow-lg hover:shadow-indigo-500/25 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Analyze Document</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             )}
 
-            {/* Section 54 Privacy Microcopy */}
+            {/* Privacy Microcopy */}
             <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-xs space-y-1">
               <div className="flex items-center gap-2 font-semibold text-[var(--text-primary)]">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -293,19 +298,22 @@ export default function UploadPage() {
             </div>
           </div>
         ) : (
-          /* ─── REALISTIC MULTI-STEP PROGRESS STATE (Section 27) ─── */
+          /* ─── SECTION 15: MULTI-STAGE ANIMATED PROGRESS ─── */
           <div className="bg-[var(--surface)] rounded-3xl border border-[var(--border)] p-6 sm:p-8 shadow-xl space-y-6">
             <div className="text-center space-y-1">
-              <h2 className="font-serif text-xl font-bold text-[var(--text-primary)]">
-                Analyzing your legal document
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center mx-auto shadow-md">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h2 className="font-serif text-xl font-bold text-[var(--text-primary)] mt-3">
+                ✨ Reading your document
               </h2>
               <p className="text-xs text-[var(--text-muted)]">
                 Extracting legal clauses, obligations, and statutory cross-references.
               </p>
             </div>
 
-            <div className="space-y-3 max-w-md mx-auto pt-2">
-              {REALISTIC_STAGES.map((stage, idx) => {
+            <div className="space-y-2.5 max-w-md mx-auto pt-2">
+              {PROGRESS_STAGES.map((stage, idx) => {
                 const isDone = idx < stageIndex;
                 const isCurrent = idx === stageIndex;
                 const isPending = idx > stageIndex;
@@ -315,15 +323,15 @@ export default function UploadPage() {
                     key={stage.id}
                     className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
                       isCurrent
-                        ? "bg-[var(--primary-subtle)] border border-[var(--primary)]/30 text-[var(--primary)] font-bold shadow-2xs"
+                        ? "bg-purple-50 dark:bg-purple-950/40 border border-purple-500/30 text-purple-700 dark:text-purple-300 font-bold shadow-2xs"
                         : isDone
                         ? "text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20"
-                        : "text-[var(--text-muted)] opacity-60"
+                        : "text-[var(--text-muted)] opacity-50"
                     }`}
                   >
                     <div className="w-5 h-5 flex items-center justify-center shrink-0">
                       {isDone && <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
-                      {isCurrent && <span className="w-2.5 h-2.5 rounded-full bg-[var(--primary)] animate-ping" />}
+                      {isCurrent && <span className="w-2.5 h-2.5 rounded-full bg-purple-600 animate-ping" />}
                       {isPending && <span className="w-2 h-2 rounded-full border border-[var(--border-strong)]" />}
                     </div>
                     <span className="text-xs">{stage.label}</span>

@@ -15,13 +15,11 @@ import {
   MessageSquare,
   Languages,
   BookOpen,
+  Sparkles,
   Shield,
   Layers,
   Search,
   ExternalLink,
-  ChevronDown,
-  ChevronUp,
-  FileCheck,
 } from "lucide-react";
 import { analysisApi, AnalysisResult, AnalysisData } from "@/lib/api";
 
@@ -50,8 +48,8 @@ export default function AnalyzePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center p-6 text-center space-y-3">
-        <div className="w-10 h-10 rounded-2xl bg-[var(--primary-subtle)] text-[var(--primary)] flex items-center justify-center animate-spin">
-          <Scale className="w-5 h-5" />
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-pink-600 text-white flex items-center justify-center animate-spin shadow-lg">
+          <Sparkles className="w-6 h-6" />
         </div>
         <p className="text-xs font-semibold text-[var(--text-secondary)]">
           Synthesizing document clauses and legal obligations...
@@ -64,19 +62,19 @@ export default function AnalyzePage() {
     return (
       <div className="min-h-screen bg-[var(--bg)] p-6 flex flex-col items-center justify-center">
         <div className="max-w-md w-full p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-md text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/40 text-[var(--error)] flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
           </div>
           <h2 className="font-serif text-base font-bold text-[var(--text-primary)]">
             We couldn&apos;t load this document analysis.
           </h2>
           <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-            {error || "The document might still be processing or may have encountered a parsing issue."}
+            {error || "The document might still be processing or encountered a parsing issue."}
           </p>
           <div className="pt-2 flex justify-center gap-3">
             <Link
               href="/upload"
-              className="px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-colors"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold hover:shadow-md transition-all"
             >
               Upload another file
             </Link>
@@ -101,9 +99,9 @@ export default function AnalyzePage() {
     page_number?: number;
     risk_level: "high" | "medium" | "low";
     explanation?: string;
+    highlightType: "blue" | "purple" | "amber" | "green";
   }
 
-  // Clause data extraction
   const clauses: DisplayClause[] =
     analysis.important_clauses && analysis.important_clauses.length > 0
       ? analysis.important_clauses.map((c, i) => ({
@@ -113,6 +111,7 @@ export default function AnalyzePage() {
           page_number: c.page || 1,
           risk_level: c.risk_level,
           explanation: c.summary,
+          highlightType: i === 0 ? "blue" : i === 1 ? "purple" : i === 2 ? "amber" : "green",
         }))
       : [
           {
@@ -121,7 +120,8 @@ export default function AnalyzePage() {
             text: "This agreement is made between the Lessor and the Lessee for residential occupancy of the described premises.",
             page_number: 1,
             risk_level: "low",
-            explanation: "Identifies both parties and gives permission for tenancy.",
+            explanation: "Identifies both parties and grants permission for residential tenancy.",
+            highlightType: "blue",
           },
           {
             title: "Rent & Deposit",
@@ -130,6 +130,7 @@ export default function AnalyzePage() {
             page_number: 1,
             risk_level: "low",
             explanation: "Sets the payment date and refundable security amount.",
+            highlightType: "purple",
           },
           {
             title: "Early Termination & Notice",
@@ -137,7 +138,8 @@ export default function AnalyzePage() {
             text: "Either party may terminate this agreement by tendering 30 days prior written notice, subject to the agreed lock-in period.",
             page_number: 2,
             risk_level: "medium",
-            explanation: "Notice period requirement. Check lock-in conditions carefully.",
+            explanation: "Notice period requirement. Lock-in deductions must comply with Section 74.",
+            highlightType: "amber",
           },
           {
             title: "Liability & Damages",
@@ -145,9 +147,24 @@ export default function AnalyzePage() {
             text: "The Lessee shall be liable for any structural damage caused during tenancy, reasonable wear and tear excepted.",
             page_number: 2,
             risk_level: "low",
-            explanation: "Protects tenant from normal wear and tear deductions.",
+            explanation: "Protects tenant from routine wear and tear deductions.",
+            highlightType: "green",
           },
         ];
+
+  // Highlight classes based on Section 13
+  const getHighlightClass = (type: "blue" | "purple" | "amber" | "green") => {
+    switch (type) {
+      case "blue":
+        return "bg-blue-100/80 dark:bg-blue-950/50 border border-blue-400 dark:border-blue-700 shadow-xs";
+      case "purple":
+        return "bg-purple-100/80 dark:bg-purple-950/50 border border-purple-400 dark:border-purple-700 shadow-xs";
+      case "amber":
+        return "bg-amber-100/80 dark:bg-amber-950/50 border border-amber-400 dark:border-amber-700 shadow-xs";
+      case "green":
+        return "bg-emerald-100/80 dark:bg-emerald-950/50 border border-emerald-400 dark:border-emerald-700 shadow-xs";
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col">
@@ -165,12 +182,12 @@ export default function AnalyzePage() {
               <h1 className="font-serif text-sm font-bold text-[var(--text-primary)] truncate max-w-sm sm:max-w-md">
                 {result.document_name}
               </h1>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--primary-subtle)] text-[var(--primary)] uppercase">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 uppercase">
                 {analysis.document_type || "Legal Document"}
               </span>
             </div>
             <p className="text-[11px] text-[var(--text-muted)]">
-              Analyzed with statutory cross-referencing
+              Analyzed with statutory cross-referencing & clause highlighting
             </p>
           </div>
         </div>
@@ -179,37 +196,37 @@ export default function AnalyzePage() {
         <div className="flex items-center gap-2">
           <Link
             href={`/chat?documentId=${documentId}`}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-colors shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold hover:shadow-md transition-all shadow-xs"
           >
-            <MessageSquare className="w-3.5 h-3.5 text-indigo-200" />
+            <Sparkles className="w-3.5 h-3.5 text-pink-200" />
             <span>Ask AI</span>
           </Link>
           <Link
             href={`/translate?documentId=${documentId}`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-secondary)] text-xs font-semibold transition-colors shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-teal-500/30 bg-teal-50/50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-300 hover:bg-teal-100/60 text-xs font-semibold transition-colors shadow-2xs"
           >
-            <Languages className="w-3.5 h-3.5 text-indigo-500" />
+            <Languages className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
             <span>Translate</span>
           </Link>
         </div>
       </div>
 
-      {/* ─── SECTION 28: SPLIT-SCREEN WORKSPACE ─── */}
+      {/* ─── SECTION 12: SPLIT-SCREEN WORKSPACE ─── */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden max-w-7xl mx-auto w-full p-4 gap-4">
-        {/* LEFT PANE: DOCUMENT VIEWER / EXCERPTS */}
+        {/* LEFT PANE: DOCUMENT VIEWER WITH COLORED HIGHLIGHTS (Section 13) */}
         <div className="w-full lg:w-1/2 flex flex-col bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
           <div className="p-3 border-b border-[var(--border)] bg-[var(--surface-secondary)] flex items-center justify-between text-xs">
             <span className="font-bold text-[var(--text-primary)] flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-[var(--primary)]" /> Document Pages
+              <FileText className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" /> Document Pages
             </span>
             <div className="flex items-center gap-1">
               {[1, 2].map((p) => (
                 <button
                   key={p}
                   onClick={() => setActivePage(p)}
-                  className={`px-2 py-0.5 rounded text-[11px] font-semibold cursor-pointer ${
+                  className={`px-2.5 py-0.5 rounded text-[11px] font-semibold cursor-pointer transition-colors ${
                     activePage === p
-                      ? "bg-[var(--primary)] text-white"
+                      ? "bg-sky-600 text-white"
                       : "text-[var(--text-muted)] hover:bg-[var(--surface)]"
                   }`}
                 >
@@ -220,7 +237,7 @@ export default function AnalyzePage() {
           </div>
 
           <div className="flex-1 p-6 overflow-y-auto font-mono text-xs leading-relaxed text-[var(--text-secondary)] space-y-4 bg-[var(--surface)]">
-            <div className="border border-[var(--border)] rounded-xl p-5 bg-[var(--surface-secondary)]/50 shadow-inner space-y-4">
+            <div className="border border-[var(--border)] rounded-2xl p-5 bg-[var(--surface-secondary)]/40 shadow-inner space-y-4">
               <div className="text-center pb-3 border-b border-[var(--border)]">
                 <span className="text-[11px] font-bold text-[var(--text-muted)] tracking-wider">
                   ORIGINAL DOCUMENT TRANSCRIPT (PAGE {activePage})
@@ -229,27 +246,33 @@ export default function AnalyzePage() {
 
               {activePage === 1 ? (
                 <>
+                  {/* Clause 1: Blue Highlight */}
                   <div
-                    className={`p-3 rounded-xl transition-colors ${
+                    className={`p-3.5 rounded-xl transition-all ${
                       selectedClauseIndex === 0
-                        ? "bg-amber-100/70 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-[var(--text-primary)]"
+                        ? getHighlightClass("blue")
                         : "hover:bg-[var(--surface)]"
                     }`}
                   >
-                    <strong className="block text-[var(--text-primary)] mb-1">1. PARTIES & OCCUPANCY</strong>
+                    <strong className="block text-blue-700 dark:text-blue-300 font-bold mb-1">
+                      1. PARTIES & OCCUPANCY (Blue: Information)
+                    </strong>
                     <p>
                       This Agreement is entered into on this 1st day of January between the Lessor and the Lessee, wherein the Lessor leases the residential premises with all existing fixtures and fittings.
                     </p>
                   </div>
 
+                  {/* Clause 2: Purple Highlight */}
                   <div
-                    className={`p-3 rounded-xl transition-colors ${
+                    className={`p-3.5 rounded-xl transition-all ${
                       selectedClauseIndex === 1
-                        ? "bg-amber-100/70 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-[var(--text-primary)]"
+                        ? getHighlightClass("purple")
                         : "hover:bg-[var(--surface)]"
                     }`}
                   >
-                    <strong className="block text-[var(--text-primary)] mb-1">2. RENT AND SECURITY DEPOSIT</strong>
+                    <strong className="block text-purple-700 dark:text-purple-300 font-bold mb-1">
+                      2. RENT AND SECURITY DEPOSIT (Purple: Financial Insight)
+                    </strong>
                     <p>
                       The Lessee agrees to pay a monthly rent of ₹15,000 on or before the 5th of each calendar month. The Lessee has furnished a refundable security deposit of ₹45,000 to be returned upon peaceful handover.
                     </p>
@@ -257,27 +280,33 @@ export default function AnalyzePage() {
                 </>
               ) : (
                 <>
+                  {/* Clause 3: Amber Highlight */}
                   <div
-                    className={`p-3 rounded-xl transition-colors ${
+                    className={`p-3.5 rounded-xl transition-all ${
                       selectedClauseIndex === 2
-                        ? "bg-amber-100/70 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-[var(--text-primary)]"
+                        ? getHighlightClass("amber")
                         : "hover:bg-[var(--surface)]"
                     }`}
                   >
-                    <strong className="block text-[var(--text-primary)] mb-1">3. TERMINATION AND NOTICE PERIOD</strong>
+                    <strong className="block text-amber-700 dark:text-amber-300 font-bold mb-1">
+                      3. TERMINATION AND NOTICE PERIOD (Amber: Attention)
+                    </strong>
                     <p>
                       Either party may determine this agreement prior to expiry by giving 30 calendar days written notice. In the event of early termination prior to completion of lock-in period, deposit terms shall apply.
                     </p>
                   </div>
 
+                  {/* Clause 4: Green Highlight */}
                   <div
-                    className={`p-3 rounded-xl transition-colors ${
+                    className={`p-3.5 rounded-xl transition-all ${
                       selectedClauseIndex === 3
-                        ? "bg-amber-100/70 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-[var(--text-primary)]"
+                        ? getHighlightClass("green")
                         : "hover:bg-[var(--surface)]"
                     }`}
                   >
-                    <strong className="block text-[var(--text-primary)] mb-1">4. REPAIRS AND MAINTENANCE</strong>
+                    <strong className="block text-emerald-700 dark:text-emerald-300 font-bold mb-1">
+                      4. REPAIRS AND MAINTENANCE (Green: Verified Terms)
+                    </strong>
                     <p>
                       Minor day-to-day repairs shall be borne by the Lessee. Major structural repairs, seepage or roofing issues shall be attended by the Lessor forthwith.
                     </p>
@@ -287,27 +316,27 @@ export default function AnalyzePage() {
             </div>
 
             <p className="text-[11px] text-[var(--text-muted)] text-center">
-              Clicking any clause in the right analysis panel automatically highlights the corresponding excerpt above.
+              Click any clause in the right panel to jump and activate animated color highlights.
             </p>
           </div>
         </div>
 
-        {/* RIGHT PANE: AI ANALYSIS */}
+        {/* RIGHT PANE: COLORFUL AI ANALYSIS (Section 12) */}
         <div className="w-full lg:w-1/2 flex flex-col bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs overflow-hidden">
           {/* Navigation Tabs */}
           <div className="flex border-b border-[var(--border)] bg-[var(--surface-secondary)] px-2 pt-2 gap-1 text-xs font-semibold overflow-x-auto">
             {[
-              { id: "summary", label: "Summary" },
-              { id: "clauses", label: "Clause Explorer" },
-              { id: "risks", label: "Areas to Review" },
-              { id: "responsibilities", label: "Responsibilities" },
+              { id: "summary", label: "✨ Simple Explanation" },
+              { id: "clauses", label: "📌 Important Clauses" },
+              { id: "risks", label: "⚠ Review These" },
+              { id: "responsibilities", label: "→ Responsibilities" },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`px-3 py-2 rounded-t-xl transition-all border-b-2 cursor-pointer whitespace-nowrap ${
                   activeTab === tab.id
-                    ? "bg-[var(--surface)] text-[var(--primary)] border-[var(--primary)] shadow-2xs font-bold"
+                    ? "bg-[var(--surface)] text-purple-600 dark:text-purple-400 border-purple-600 shadow-2xs font-bold"
                     : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 }`}
               >
@@ -317,11 +346,11 @@ export default function AnalyzePage() {
           </div>
 
           <div className="flex-1 p-5 overflow-y-auto space-y-5">
-            {/* ─── TAB 1: SECTION 29 SUMMARY ─── */}
+            {/* ─── TAB 1: SUMMARY ─── */}
             {activeTab === "summary" && (
               <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-[var(--surface-secondary)] border border-[var(--border)] space-y-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--primary)] flex items-center gap-1.5">
+                <div className="p-4 rounded-2xl bg-purple-50/60 dark:bg-purple-950/25 border border-purple-200 dark:border-purple-900/50 space-y-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> In Simple Words
                   </span>
                   <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
@@ -331,9 +360,9 @@ export default function AnalyzePage() {
 
                 {/* Important Dates & Amounts */}
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-indigo-500" /> Important Dates
+                  <div className="p-3.5 rounded-xl border border-sky-500/20 bg-sky-50/40 dark:bg-sky-950/20 space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-sky-600 dark:text-sky-400" /> Important Dates
                     </span>
                     <p className="text-xs font-semibold text-[var(--text-primary)]">
                       {analysis.important_dates?.[0]?.label || "Monthly payment cycle"}
@@ -343,9 +372,9 @@ export default function AnalyzePage() {
                     </span>
                   </div>
 
-                  <div className="p-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1">
-                      <Scale className="w-3 h-3 text-amber-500" /> Key Amounts
+                  <div className="p-3.5 rounded-xl border border-amber-500/20 bg-amber-50/40 dark:bg-amber-950/20 space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                      <Scale className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Key Amounts
                     </span>
                     <p className="text-xs font-semibold text-[var(--text-primary)]">
                       {analysis.financial_terms?.[0]?.amount || "₹15,000 / month"}
@@ -385,22 +414,22 @@ export default function AnalyzePage() {
                 </div>
 
                 {/* Next Steps */}
-                <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-950/20 text-xs space-y-1.5">
+                <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-950/20 text-xs space-y-1.5">
                   <span className="font-bold text-emerald-800 dark:text-emerald-300 block">
                     Possible Next Steps
                   </span>
                   <p className="text-[11px] text-emerald-900/90 dark:text-emerald-200/90 leading-relaxed">
-                    Verify meter readings, secure a written receipt for the deposit transfer, and keep a digital copy of this signed agreement in your case locker.
+                    Verify electric meter readings, secure a stamped receipt for the deposit transfer, and keep a digital backup in your case locker.
                   </p>
                 </div>
               </div>
             )}
 
-            {/* ─── TAB 2: SECTION 30 CLAUSE EXPLORER ─── */}
+            {/* ─── TAB 2: CLAUSE EXPLORER (Section 13) ─── */}
             {activeTab === "clauses" && (
               <div className="space-y-3">
                 <p className="text-xs text-[var(--text-muted)]">
-                  Click any clause to inspect its plain explanation and potential concerns.
+                  Click any clause to highlight it in the transcript on the left:
                 </p>
 
                 {clauses.map((clause, idx) => {
@@ -414,7 +443,13 @@ export default function AnalyzePage() {
                       }}
                       className={`p-4 rounded-xl border transition-all cursor-pointer ${
                         isSelected
-                          ? "border-[var(--primary)] bg-[var(--primary-subtle)] shadow-xs"
+                          ? clause.highlightType === "blue"
+                            ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-xs"
+                            : clause.highlightType === "purple"
+                            ? "border-purple-500 bg-purple-50/50 dark:bg-purple-950/30 shadow-xs"
+                            : clause.highlightType === "amber"
+                            ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/30 shadow-xs"
+                            : "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 shadow-xs"
                           : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)]"
                       }`}
                     >
@@ -435,7 +470,7 @@ export default function AnalyzePage() {
                         <div className="mt-3 pt-3 border-t border-[var(--border)] text-xs space-y-2 animate-in fade-in">
                           <div>
                             <span className="text-[10px] font-bold uppercase text-[var(--text-muted)] block">
-                              Original Clause
+                              Original Clause Text
                             </span>
                             <p className="text-[11px] text-[var(--text-secondary)] font-serif italic mt-0.5">
                               &quot;{clause.text}&quot;
@@ -444,7 +479,7 @@ export default function AnalyzePage() {
 
                           <div className="p-2.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] space-y-1">
                             <span className="text-[10px] font-bold uppercase text-amber-600 dark:text-amber-400 block">
-                              Potential Concern / Worth Reviewing
+                              Potential Concern / Review Recommendation
                             </span>
                             <p className="text-[11px] text-[var(--text-secondary)]">
                               Ensure notice duration and lock-in period align with local state tenancy regulations.
@@ -458,10 +493,10 @@ export default function AnalyzePage() {
               </div>
             )}
 
-            {/* ─── TAB 3: SECTION 31 AREAS TO REVIEW (NO FAKE 92% SAFE) ─── */}
+            {/* ─── TAB 3: REVIEW THESE ─── */}
             {activeTab === "risks" && (
               <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 space-y-1.5">
+                <div className="p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-900/60 space-y-1.5">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                     <span className="text-xs font-bold text-amber-900 dark:text-amber-300">
@@ -474,7 +509,7 @@ export default function AnalyzePage() {
                 </div>
 
                 <div className="space-y-2.5 text-xs">
-                  <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-1">
+                  <div className="p-3.5 rounded-xl border border-amber-500/25 bg-[var(--surface)] space-y-1">
                     <strong className="block text-[var(--text-primary)] font-semibold">
                       • Termination & Lock-in Clause
                     </strong>
@@ -483,7 +518,7 @@ export default function AnalyzePage() {
                     </p>
                   </div>
 
-                  <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-1">
+                  <div className="p-3.5 rounded-xl border border-amber-500/25 bg-[var(--surface)] space-y-1">
                     <strong className="block text-[var(--text-primary)] font-semibold">
                       • Security Deposit Refund Timeline
                     </strong>
@@ -492,7 +527,7 @@ export default function AnalyzePage() {
                     </p>
                   </div>
 
-                  <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-1">
+                  <div className="p-3.5 rounded-xl border border-amber-500/25 bg-[var(--surface)] space-y-1">
                     <strong className="block text-[var(--text-primary)] font-semibold">
                       • Wear and Tear vs Damage Liability
                     </strong>
@@ -507,24 +542,24 @@ export default function AnalyzePage() {
             {/* ─── TAB 4: RESPONSIBILITIES ─── */}
             {activeTab === "responsibilities" && (
               <div className="space-y-4 text-xs">
-                <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-2">
-                  <span className="font-bold text-[var(--text-primary)] block">Your Responsibilities</span>
+                <div className="p-3.5 rounded-xl border border-indigo-500/20 bg-indigo-50/30 dark:bg-indigo-950/20 space-y-2">
+                  <span className="font-bold text-indigo-800 dark:text-indigo-300 block">Your Responsibilities</span>
                   <ul className="space-y-1.5 text-[var(--text-secondary)]">
                     {analysis.obligations?.your_obligations && analysis.obligations.your_obligations.length > 0 ? (
                       analysis.obligations.your_obligations.map((ob, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] mt-1.5 shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
                           <span>{ob.text}</span>
                         </li>
                       ))
                     ) : (
                       <>
                         <li className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] mt-1.5 shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
                           <span>Pay monthly rent on or before the 5th day.</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] mt-1.5 shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
                           <span>Provide 30 days written notice prior to moving out.</span>
                         </li>
                       </>
@@ -532,8 +567,8 @@ export default function AnalyzePage() {
                   </ul>
                 </div>
 
-                <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] space-y-2">
-                  <span className="font-bold text-[var(--text-primary)] block">Other Party&apos;s Responsibilities</span>
+                <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-50/30 dark:bg-emerald-950/20 space-y-2">
+                  <span className="font-bold text-emerald-800 dark:text-emerald-300 block">Other Party&apos;s Responsibilities</span>
                   <ul className="space-y-1.5 text-[var(--text-secondary)]">
                     {analysis.obligations?.other_party_obligations && analysis.obligations.other_party_obligations.length > 0 ? (
                       analysis.obligations.other_party_obligations.map((ob, i) => (
