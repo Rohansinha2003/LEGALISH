@@ -100,99 +100,108 @@
   --slate-50:   #F8FAFC;
 
   /* =========================================================
-     SEMANTIC DESIGN TOKENS (LIGHT MODE)
+     SEMANTIC DESIGN TOKENS (LIGHT MODE - SIGNATURE WARM IVORY)
      ========================================================= */
-  --bg:                 #F8FAFC;
-  --bg-page:            #F8FAFC;
-  --surface:            #FFFFFF;
-  --bg-surface:         #FFFFFF;
-  --surface-secondary:  #F1F5F9;
-  --bg-surface-subtle:  #F8FAFC;
-  --bg-surface-hover:   #F1F5F9;
-  --border:             #E2E8F0;
-  --border-subtle:      #E2E8F0;
-  --border-medium:      #CBD5E1;
-  --border-strong:      #94A3B8;
+  --bg:                 #F7F3EC; /* Warm Ivory */
+  --bg-page:            #F7F3EC;
+  --surface:            #FBF9F5; /* Cream */
+  --bg-surface:         #FBF9F5;
+  --surface-secondary:  #F4F0E8; /* Paper */
+  --bg-surface-subtle:  #F7F3EC;
+  --bg-surface-hover:   #EFE9DE; /* Soft Beige */
+  --border:             #DED8CD; /* Refined Warm Border */
+  --border-subtle:      #EAE5DA;
+  --border-medium:      #D5CEBF;
+  --border-strong:      #B3A996;
 
-  --text-primary:       #0F172A;
-  --text-secondary:     #334155;
-  --text-muted:         #64748B;
-  --text-faint:         #94A3B8;
-  --text-inverse:       #FFFFFF;
+  --text-primary:       #171717; /* Deep Charcoal */
+  --text-secondary:     #6B6862; /* Warm Gray */
+  --text-muted:         #8C8880;
+  --text-faint:         #B5B0A4;
+  --text-inverse:       #FBF9F5;
 
-  --primary:            #4F46E5;
+  --primary:            #4F46E5; /* Deep Indigo */
   --primary-hover:      #4338CA;
-  --primary-subtle:     #EEF2FF;
+  --primary-subtle:     #EEF0FC;
 
-  --secondary:          #7C3AED;
+  --secondary:          #7C3AED; /* Violet / AI */
   --secondary-hover:    #6D28D9;
-  --secondary-subtle:   #FAF5FF;
+  --secondary-subtle:   #F5F1FD;
 
-  --accent:             #06B6D4;
-  --accent-hover:       #0891B2;
-  --accent-subtle:      #ECFEFF;
+  --accent:             #0F9F9A; /* Teal */
+  --accent-hover:       #0D8682;
+  --accent-subtle:      #ECF9F8;
 
-  --success:            #10B981;
-  --warning:            #F59E0B;
-  --error:              #EF4444;
-  --info:               #3B82F6;
+  --success:            #16845B; /* Emerald */
+  --warning:            #C98A16; /* Amber */
+  --error:              #D95C55; /* Coral */
+  --info:               #4F46E5;
 
-  /* Feature-Specific Color Tokens (Section 17 & 50) */
+  /* Feature-Specific Color Tokens (Section 8) */
   --color-cases:        #4F46E5;
-  --color-docs:         #0284C7;
+  --color-docs:         #4F46E5;
   --color-ai:           #7C3AED;
-  --color-research:     #0891B2;
-  --color-translation:  #0D9488;
-  --color-deadlines:    #D97706;
-  --color-lawyer:       #059669;
-  --color-settings:     #475569;
+  --color-research:     #0F9F9A;
+  --color-translation:  #16845B;
+  --color-deadlines:    #D95C55;
+  --color-lawyer:       #16845B;
+  --color-settings:     #6B6862;
 
-  /* Shadows */
-  --shadow-2xs: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-xs:  0 1px 3px rgba(15, 23, 42, 0.05);
-  --shadow-sm:  0 2px 4px rgba(15, 23, 42, 0.06);
-  --shadow-md:  0 6px 12px -2px rgba(15, 23, 42, 0.08), 0 3px 6px -3px rgba(15, 23, 42, 0.05);
-  --shadow-lg:  0 12px 24px -4px rgba(15, 23, 42, 0.10), 0 4px 8px -4px rgba(15, 23, 42, 0.04);
-  --shadow-glow-ai: 0 0 20px -3px rgba(139, 92, 246, 0.25);
-  --shadow-glow-primary: 0 0 20px -3px rgba(79, 70, 229, 0.25);
+  /* Soft Tinted Surfaces */
+  --tint-indigo:        #EEF0FC;
+  --tint-violet:        #F5F1FD;
+  --tint-teal:          #ECF9F8;
+  --tint-emerald:       #EBF7F2;
+  --tint-amber:         #FAF4E6;
+  --tint-coral:         #FAEDED;
+
+  /* Shadows (Prompt #30 - subtle 0 8px 30px rgba(0,0,0,0.04-0.06)) */
+  --shadow-2xs: 0 1px 2px rgba(23, 23, 23, 0.03);
+  --shadow-xs:  0 1px 3px rgba(23, 23, 23, 0.04);
+  --shadow-sm:  0 2px 6px rgba(23, 23, 23, 0.04);
+  --shadow-md:  0 8px 30px rgba(23, 23, 23, 0.05);
+  --shadow-lg:  0 14px 40px rgba(23, 23, 23, 0.07);
+  --shadow-glow-ai: 0 0 25px -4px rgba(124, 58, 237, 0.18);
+  --shadow-glow-primary: 0 0 25px -4px rgba(79, 70, 229, 0.18);
 }
 
 /* =========================================================
-   SEMANTIC DESIGN TOKENS (DARK MODE - Deep Navy/Charcoal)
+   SEMANTIC DESIGN TOKENS (DARK MODE - Section 21)
+   Background: #0D0D0F | Surfaces: #151518 | Text: #F5F5F5
    ========================================================= */
 .dark {
-  --bg:                 #0B0F19;
-  --bg-page:            #0B0F19;
-  --surface:            #111827;
-  --bg-surface:         #111827;
-  --surface-secondary:  #161F33;
-  --bg-surface-subtle:  #131B2E;
-  --bg-surface-hover:   #1E293B;
-  --border:             #1F293D;
-  --border-subtle:      #1F293D;
-  --border-medium:      #334155;
-  --border-strong:      #475569;
+  --bg:                 #0D0D0F;
+  --bg-page:            #0D0D0F;
+  --surface:            #151518;
+  --bg-surface:         #151518;
+  --surface-secondary:  #1D1D22;
+  --bg-surface-subtle:  #18181D;
+  --bg-surface-hover:   #23232A;
+  --border:             #26262B;
+  --border-subtle:      #212126;
+  --border-medium:      #32323A;
+  --border-strong:      #484852;
 
-  --text-primary:       #F8FAFC;
-  --text-secondary:     #CBD5E1;
-  --text-muted:         #94A3B8;
-  --text-faint:         #64748B;
-  --text-inverse:       #0B0F19;
+  --text-primary:       #F5F5F5;
+  --text-secondary:     #A1A1A8;
+  --text-muted:         #787882;
+  --text-faint:         #55555C;
+  --text-inverse:       #0D0D0F;
 
   --primary:            #6366F1;
   --primary-hover:      #818CF8;
-  --primary-subtle:     rgba(99, 102, 241, 0.15);
+  --primary-subtle:     rgba(99, 102, 241, 0.12);
 
   --secondary:          #8B5CF6;
   --secondary-hover:    #A78BFA;
-  --secondary-subtle:   rgba(139, 92, 246, 0.15);
+  --secondary-subtle:   rgba(139, 92, 246, 0.12);
 
-  --accent:             #22D3EE;
-  --accent-hover:       #67E8F9;
-  --accent-subtle:      rgba(34, 211, 238, 0.15);
+  --accent:             #14B8A6;
+  --accent-hover:       #2DD4BF;
+  --accent-subtle:      rgba(20, 184, 166, 0.12);
 
-  --shadow-glow-ai: 0 0 25px -2px rgba(167, 139, 250, 0.35);
-  --shadow-glow-primary: 0 0 25px -2px rgba(99, 102, 241, 0.35);
+  --shadow-glow-ai: 0 0 30px -3px rgba(139, 92, 246, 0.25);
+  --shadow-glow-primary: 0 0 30px -3px rgba(99, 102, 241, 0.25);
 }
 
 * {
@@ -213,6 +222,14 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.font-serif {
+  font-family: var(--font-newsreader), "Newsreader", "Merriweather", Georgia, serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), "JetBrains Mono", Menlo, monospace;
 }
 
 /* =========================================================
@@ -445,4 +462,42 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--slate-500);
+}
+
+/* =========================================================
+   SIGNATURE WARM IVORY & EDITORIAL PAPER UTILITIES (Prompt #1)
+   ========================================================= */
+
+.bg-warm-canvas {
+  background-color: #F7F3EC;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.035) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(79, 70, 229, 0.035) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(15, 159, 154, 0.025) 0px, transparent 50%);
+}
+
+.paper-surface {
+  background-color: #FBF9F5;
+  border: 1px solid #DED8CD;
+  box-shadow: 0 8px 30px rgba(23, 23, 23, 0.04);
+}
+
+.paper-card {
+  background-color: #FBF9F5;
+  border: 1px solid #DED8CD;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(23, 23, 23, 0.04);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.paper-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(23, 23, 23, 0.07);
+  border-color: #D5CEBF;
+}
+
+.subtle-grid-pattern {
+  background-size: 32px 32px;
+  background-image: linear-gradient(to right, rgba(222, 216, 205, 0.25) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(222, 216, 205, 0.25) 1px, transparent 1px);
 }

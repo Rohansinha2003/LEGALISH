@@ -243,32 +243,34 @@ export default function UploadPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-xs text-rose-900 dark:text-rose-300 space-y-2">
-                <div className="flex items-center gap-2 font-semibold">
-                  <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
-                  <span>We couldn&apos;t process this document.</span>
+              <div className="p-5 rounded-2xl bg-[#FAEDED] dark:bg-rose-950/30 border border-[#D95C55]/30 text-xs text-[#171717] dark:text-rose-300 space-y-2">
+                <div className="flex items-center gap-2 font-serif font-bold text-sm text-[#D95C55]">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>Something went wrong.</span>
                 </div>
-                <p className="text-[11px] leading-relaxed text-rose-800 dark:text-rose-400">{error}</p>
-                <div className="pt-2 flex items-center gap-3 border-t border-rose-200/60 dark:border-rose-900/60">
+                <p className="text-xs text-[#6B6862] dark:text-rose-300/80 leading-relaxed">
+                  We couldn&apos;t process this document. Your document has not been lost.
+                </p>
+                <div className="pt-2 flex items-center gap-3 border-t border-[#D95C55]/20">
                   <button
                     onClick={() => {
                       setError(null);
                       if (selectedFile) handleUpload();
                     }}
-                    className="font-semibold underline hover:text-[var(--text-primary)] cursor-pointer"
+                    className="font-semibold underline hover:text-[#171717] cursor-pointer"
                   >
-                    Try again
+                    Try Again
                   </button>
                   <button
                     onClick={() => {
                       setError(null);
                       setSelectedFile(null);
                     }}
-                    className="font-semibold underline hover:text-[var(--text-primary)] cursor-pointer"
+                    className="font-semibold underline hover:text-[#171717] cursor-pointer"
                   >
                     Upload another file
                   </button>
-                  <Link href="/easy-help" className="hover:underline">
+                  <Link href="/easy-help" className="hover:underline text-[#6B6862]">
                     Contact support
                   </Link>
                 </div>
@@ -301,14 +303,14 @@ export default function UploadPage() {
           /* ─── SECTION 15: MULTI-STAGE ANIMATED PROGRESS ─── */
           <div className="bg-[var(--surface)] rounded-3xl border border-[var(--border)] p-6 sm:p-8 shadow-xl space-y-6">
             <div className="text-center space-y-1">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center mx-auto shadow-md">
-                <Sparkles className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-2xl bg-[#171717] text-[#FBF9F5] flex items-center justify-center mx-auto shadow-sm">
+                <Sparkles className="w-6 h-6 text-[#7C3AED]" />
               </div>
-              <h2 className="font-serif text-xl font-bold text-[var(--text-primary)] mt-3">
-                ✨ Reading your document
+              <h2 className="font-serif text-xl font-bold text-[#171717] dark:text-[#F5F5F5] mt-3">
+                ✦ Reading your document
               </h2>
-              <p className="text-xs text-[var(--text-muted)]">
-                Extracting legal clauses, obligations, and statutory cross-references.
+              <p className="text-xs text-[#6B6862]">
+                Identifying important clauses & verifying legal references.
               </p>
             </div>
 

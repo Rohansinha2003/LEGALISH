@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Outfit, Merriweather } from "next/font/google";
+import { Outfit, Newsreader, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { Navbar } from "@/components/Navbar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { CommandPalette } from "@/components/CommandPalette";
+import { Footer } from "@/components/Footer";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -12,17 +13,24 @@ const outfit = Outfit({
   display: "swap",
 });
 
-const merriweather = Merriweather({
+const newsreader = Newsreader({
   subsets: ["latin"],
-  weight: ["300", "400", "700"],
-  variable: "--font-merriweather",
+  style: ["normal", "italic"],
+  weight: ["400", "500", "600"],
+  variable: "--font-newsreader",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "LegalSaathi V4 — Digital Legal Intelligence & Access Platform for India",
+  title: "LEGAL AI — AI-Powered Legal Intelligence for India",
   description:
-    "Make legal information understandable and accessible to ordinary people in India. AI-powered document analysis, bilingual legal guidance, and trusted case intelligence.",
+    "Understand the law. Know what to do next. Plain-language document intelligence, statutory verification, and advocate collaboration.",
   keywords: [
     "legal assistance India",
     "Indian law AI",
@@ -34,8 +42,8 @@ export const metadata: Metadata = {
     "DPDP compliance",
   ],
   openGraph: {
-    title: "LegalSaathi V4 — Digital Legal Intelligence & Access Platform",
-    description: "Understand the law. Know what to do next. Multilingual Indian Legal Assistance Platform.",
+    title: "LEGAL AI — AI-Powered Legal Intelligence for India",
+    description: "Understand the law. Know what to do next. Digital Legal Intelligence & Access Platform for India.",
     type: "website",
   },
 };
@@ -44,10 +52,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${merriweather.variable}`}>
+    <html lang="en" className={`${outfit.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-150">
         <Navbar />
         <main className="flex-1 pb-16 md:pb-0">{children}</main>
+        <Footer />
         <MobileBottomNav />
         <CommandPalette />
         <Toaster

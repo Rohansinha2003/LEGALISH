@@ -414,104 +414,103 @@ function ChatContent() {
                 <div
                   className={`max-w-2xl rounded-2xl text-xs ${
                     msg.role === "user"
-                      ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3.5 shadow-md"
-                      : "bg-[var(--surface)] border border-[var(--border)] p-4 sm:p-5 text-[var(--text-primary)] w-full space-y-4 shadow-sm"
+                      ? "bg-[#171717] dark:bg-[#F5F5F5] text-[#FBF9F5] dark:text-[#171717] p-4 shadow-sm"
+                      : "bg-[#FBF9F5] dark:bg-[#18181D] border border-[#DED8CD] dark:border-[#26262B] p-5 sm:p-6 text-[#171717] dark:text-[#F5F5F5] w-full space-y-4 shadow-xs"
                   }`}
                 >
                   {msg.role === "user" ? (
                     <p className="text-sm font-normal leading-relaxed">{msg.content}</p>
                   ) : (
-                    /* ─── SECTION 11: 6-PART COLORFUL STRUCTURED RESPONSE ─── */
+                    /* ─── PROMPT #11: STRUCTURED AI ANSWER EXPERIENCE ─── */
                     <div className="space-y-4">
-                      {/* Status Badges */}
-                      <div className="flex items-center justify-between border-b border-[var(--border)] pb-2.5">
+                      {/* Header Badge */}
+                      <div className="flex items-center justify-between pb-3 border-b border-[#DED8CD] dark:border-[#26262B]">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
-                            ✓ Verified Indian Law
+                          <span className="font-serif text-xs font-bold text-[#7C3AED] dark:text-[#A78BFA]">
+                            ✦ Legal AI
                           </span>
-                          <span className="text-[10px] text-[var(--text-muted)]">
-                            Mode: {msg.mode || "standard"}
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#EBF7F2] text-[#0F5C3E] border border-[#BCE5D5]">
+                            ✓ Official Source Grounded
                           </span>
                         </div>
-                        {selectedDoc && (
-                          <span className="text-[10px] text-[var(--text-muted)] truncate max-w-[180px]">
-                            {selectedDoc.name}
-                          </span>
-                        )}
+                        <span className="text-[10px] font-mono text-[#8C8880]">
+                          Mode: {msg.mode || "standard"}
+                        </span>
                       </div>
 
-                      {/* 1. ✨ Simple Answer (Purple Accent) */}
-                      <div className="p-3.5 rounded-xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/60 space-y-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1">
-                          <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                          Simple Answer
+                      {/* 1. Short answer */}
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#7C3AED] dark:text-[#A78BFA] block">
+                          Short Answer
                         </span>
-                        <p className="text-sm font-semibold text-[var(--text-primary)] leading-relaxed">
+                        <p className="text-sm font-semibold text-[#171717] dark:text-[#F5F5F5] leading-relaxed">
                           {msg.structured?.simpleAnswer || msg.content}
                         </p>
                       </div>
 
-                      {/* 2. 📌 What this means (Blue Accent) */}
+                      {/* Divider */}
+                      <hr className="border-t border-[#DED8CD]/70 dark:border-[#26262B]" />
+
+                      {/* 2. What this means */}
                       {msg.structured?.whatThisMeans && (
-                        <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/25 border border-blue-200 dark:border-blue-900/50 space-y-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 block">
-                            📌 What this means
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6862] dark:text-[#A1A1A8] block">
+                            What this means
                           </span>
-                          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                          <p className="text-xs text-[#171717] dark:text-[#E5E2DC] leading-relaxed">
                             {msg.structured.whatThisMeans}
                           </p>
                         </div>
                       )}
 
-                      {/* 3. 🔎 What I found (Cyan Accent) */}
-                      {msg.structured?.whatFound && (
-                        <div className="p-3.5 rounded-xl bg-cyan-50/60 dark:bg-cyan-950/25 border border-cyan-200 dark:border-cyan-900/50 space-y-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-300 flex items-center gap-1">
-                            <Search className="w-3 h-3" /> 🔎 What I found
-                          </span>
-                          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                            {msg.structured.whatFound}
-                          </p>
-                        </div>
-                      )}
+                      {/* Divider */}
+                      <hr className="border-t border-[#DED8CD]/70 dark:border-[#26262B]" />
 
-                      {/* 4. ⚠ Things to review (Amber Accent) */}
+                      {/* 3. What you should know */}
                       {msg.structured?.thingsToReview && msg.structured.thingsToReview.length > 0 && (
-                        <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 space-y-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 flex items-center gap-1">
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" /> ⚠ Things to review
+                        <div className="space-y-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#C98A16] block">
+                            What you should know
                           </span>
-                          <div className="space-y-1 text-xs text-amber-900/90 dark:text-amber-200/90 leading-relaxed">
+                          <div className="space-y-1.5 text-xs text-[#171717] dark:text-[#E5E2DC] leading-relaxed">
                             {msg.structured.thingsToReview.map((item, kIdx) => (
-                              <p key={kIdx}>• {item}</p>
+                              <p key={kIdx} className="flex items-start gap-1.5">
+                                <span className="text-[#C98A16]">•</span>
+                                <span>{item}</span>
+                              </p>
                             ))}
                           </div>
                         </div>
                       )}
 
-                      {/* 5. → What you can do next (Emerald Accent) */}
+                      {/* Divider */}
+                      <hr className="border-t border-[#DED8CD]/70 dark:border-[#26262B]" />
+
+                      {/* 4. What you can do next */}
                       {msg.structured?.nextSteps && msg.structured.nextSteps.length > 0 && (
-                        <div className="p-3.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/25 border border-emerald-200 dark:border-emerald-900/50 space-y-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> → What you can do next
+                        <div className="space-y-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#16845B] block">
+                            What you can do next
                           </span>
-                          <ul className="space-y-1.5">
+                          <ol className="space-y-1.5 list-decimal list-inside text-xs text-[#171717] dark:text-[#E5E2DC]">
                             {msg.structured.nextSteps.map((step, sIdx) => (
-                              <li key={sIdx} className="flex items-start gap-2 text-xs text-[var(--text-secondary)]">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                                <span>{step}</span>
+                              <li key={sIdx} className="leading-relaxed">
+                                <span className="text-[#171717] dark:text-[#E5E2DC]">{step}</span>
                               </li>
                             ))}
-                          </ul>
+                          </ol>
                         </div>
                       )}
 
-                      {/* 6. 📚 Verified Legal Sources (Cyan Accent) */}
+                      {/* Divider */}
+                      <hr className="border-t border-[#DED8CD]/70 dark:border-[#26262B]" />
+
+                      {/* 5. Sources (Prompt #12: Trust + Source Design) */}
                       {msg.structured?.sources && msg.structured.sources.length > 0 && (
-                        <div className="pt-2 border-t border-[var(--border)] space-y-2">
+                        <div className="space-y-2 pt-1">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-cyan-700 dark:text-cyan-300 flex items-center gap-1.5">
-                              <BookOpen className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" /> 📚 Verified Legal Sources
+                            <span className="text-[11px] font-bold text-[#0F9F9A] flex items-center gap-1.5">
+                              <BookOpen className="w-3.5 h-3.5 text-[#0F9F9A]" /> Sources & Authority
                             </span>
                             <button
                               onClick={() =>
@@ -520,7 +519,7 @@ function ChatContent() {
                                   [i]: !prev[i],
                                 }))
                               }
-                              className="text-[10px] text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                              className="text-[10px] text-[#0F9F9A] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
                             >
                               {expandedSources[i] ? "Collapse Sources" : "View Sources"}
                               {expandedSources[i] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -532,17 +531,17 @@ function ChatContent() {
                               {msg.structured.sources.map((src, srcIdx) => (
                                 <div
                                   key={srcIdx}
-                                  className="p-3 rounded-xl border border-cyan-500/25 bg-cyan-50/30 dark:bg-cyan-950/20 space-y-1 shadow-2xs border-l-4 border-l-cyan-500"
+                                  className="p-3 rounded-2xl border border-[#DED8CD] dark:border-[#26262B] bg-[#F4F0E8] dark:bg-[#1D1D22] space-y-1 border-l-4 border-l-[#0F9F9A]"
                                 >
                                   <div className="flex items-center justify-between">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-300">
-                                      {src.section || "Statutory Act"}
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#0F9F9A]">
+                                      {src.section || "Statute"}
                                     </span>
-                                    <span className="text-[10px] text-[var(--text-muted)]">{src.date}</span>
+                                    <span className="text-[10px] text-[#8C8880]">{src.date}</span>
                                   </div>
-                                  <h4 className="text-xs font-bold text-[var(--text-primary)]">{src.title}</h4>
-                                  <p className="text-[11px] text-[var(--text-secondary)] italic leading-relaxed">
-                                    &quot;{src.excerpt}&quot;
+                                  <h4 className="text-xs font-bold text-[#171717] dark:text-[#F5F5F5]">{src.title}</h4>
+                                  <p className="text-[11px] text-[#6B6862] dark:text-[#A1A1A8] italic leading-relaxed">
+                                    &ldquo;{src.excerpt}&rdquo;
                                   </p>
                                 </div>
                               ))}

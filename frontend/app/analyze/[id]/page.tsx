@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Scale,
   ArrowLeft,
+  ArrowRight,
   FileText,
   Users,
   Calendar,
@@ -20,10 +21,12 @@ import {
   Layers,
   Search,
   ExternalLink,
+  UserCheck,
 } from "lucide-react";
 import { analysisApi, AnalysisResult, AnalysisData } from "@/lib/api";
 
 export default function AnalyzePage() {
+  const router = useRouter();
   const params = useParams();
   const documentId = params.id as string;
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -33,6 +36,7 @@ export default function AnalyzePage() {
   const [activeTab, setActiveTab] = useState<"summary" | "clauses" | "risks" | "responsibilities">("summary");
   const [selectedClauseIndex, setSelectedClauseIndex] = useState<number | null>(0);
   const [activePage, setActivePage] = useState<number>(1);
+  const [followUpQuestion, setFollowUpQuestion] = useState("");
 
   useEffect(() => {
     if (!documentId) return;
@@ -194,19 +198,33 @@ export default function AnalyzePage() {
 
         {/* Quick External Actions */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => window.print()}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--border)] text-xs font-semibold hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5 text-[#6B6862]" />
+            <span>Export Brief</span>
+          </button>
+          <Link
+            href={`/translate?documentId=${documentId}`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#0F9F9A]/30 bg-[#ECF9F8] text-[#0F9F9A] hover:bg-[#0F9F9A]/15 text-xs font-semibold transition-colors"
+          >
+            <Languages className="w-3.5 h-3.5 text-[#0F9F9A]" />
+            <span>Translate हिन्दी</span>
+          </Link>
           <Link
             href={`/chat?documentId=${documentId}`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold hover:shadow-md transition-all shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#171717] text-white text-xs font-semibold hover:bg-[#2D2C2A] transition-all"
           >
-            <Sparkles className="w-3.5 h-3.5 text-pink-200" />
+            <Sparkles className="w-3.5 h-3.5 text-[#7C3AED]" />
             <span>Ask AI</span>
           </Link>
           <Link
-            href={`/translate?documentId=${documentId}`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-teal-500/30 bg-teal-50/50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-300 hover:bg-teal-100/60 text-xs font-semibold transition-colors shadow-2xs"
+            href="/lawyers"
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#16845B] text-white text-xs font-semibold hover:bg-[#13724E] transition-all"
           >
-            <Languages className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-            <span>Translate</span>
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Escalate to Advocate</span>
           </Link>
         </div>
       </div>
@@ -593,6 +611,48 @@ export default function AnalyzePage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* ─── FOLLOW-UP Q&A DOCK (Stitch Screen 2) ─── */}
+          <div className="p-3.5 border-t border-[var(--border)] bg-[var(--surface-secondary)]/60 space-y-2">
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                value={followUpQuestion}
+                onChange={(e) => setFollowUpQuestion(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && followUpQuestion.trim()) {
+                    router.push(`/chat?documentId=${documentId}&q=${encodeURIComponent(followUpQuestion.trim())}`);
+                  }
+                }}
+                placeholder="Ask follow-up question regarding this document..."
+                className="w-full pl-3 pr-9 py-2 text-xs rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[#4F46E5]"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (followUpQuestion.trim()) {
+                    router.push(`/chat?documentId=${documentId}&q=${encodeURIComponent(followUpQuestion.trim())}`);
+                  }
+                }}
+                className="absolute right-1.5 p-1 rounded-lg bg-[#171717] text-white hover:bg-[#2D2C2A] cursor-pointer"
+                title="Send question"
+              >
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">Suggested:</span>
+              {["Draft demand on clause", "Compare to RERA model", "Calculate deposit refund"].map((prompt) => (
+                <Link
+                  key={prompt}
+                  href={`/chat?documentId=${documentId}&q=${encodeURIComponent(prompt)}`}
+                  className="px-2 py-0.5 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[10px] text-[var(--text-secondary)] hover:text-[#4F46E5] hover:border-[#4F46E5]/40 transition-colors"
+                >
+                  &ldquo;{prompt}&rdquo;
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>

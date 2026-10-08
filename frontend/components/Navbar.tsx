@@ -11,6 +11,7 @@ import {
   Sun,
   Moon,
   Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { VoiceFirstModal } from "./VoiceFirstModal";
@@ -70,60 +71,59 @@ export function Navbar() {
     }
   };
 
-  const primaryNavLinks = [
-    { href: "/", label: "Home" },
-    { href: "/cases", label: "My Cases" },
-    { href: "/upload", label: "Documents" },
+  const navLinks = [
+    { href: "/upload", label: "Product" },
+    { href: "/cases", label: "Solutions" },
+    { href: "/#how-it-works", label: "How it works" },
+    { href: "/caselaw", label: "Research" },
     { href: "/chat", label: "Ask AI", badge: "AI" },
-    { href: "/caselaw", label: "Legal Research" },
-    { href: "/create", label: "Create Document" },
-    { href: "/easy-help", label: "Legal Help" },
+    { href: "/procedures", label: "Resources" },
   ];
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[var(--surface)]/95 backdrop-blur-md border-b border-[var(--border)] transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
-          {/* Logo with Vibrant Gradient Icon */}
+      <header className="sticky top-0 z-40 bg-[#FBF9F5]/90 dark:bg-[#151518]/90 backdrop-blur-md border-b border-[#DED8CD]/70 dark:border-[#26262B] transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          {/* Brand Identity (Prompt #3 & #5) */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white flex items-center justify-center shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform">
-              <Sparkles className="w-5 h-5 text-pink-100" />
+            <div className="w-8 h-8 rounded-xl bg-[#171717] dark:bg-[#F5F5F5] text-[#FBF9F5] dark:text-[#171717] flex items-center justify-center font-serif text-sm shadow-xs transition-transform group-hover:scale-105">
+              ✦
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-serif text-lg font-bold text-[var(--text-primary)] tracking-tight">
-                  ✦ LegalSaathi
+              <div className="flex items-center gap-2">
+                <span className="font-serif text-base sm:text-lg font-bold tracking-tight text-[#171717] dark:text-[#F5F5F5]">
+                  LEGAL AI
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500/15 to-pink-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30">
+                <span className="text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full bg-[#EAE5DA] dark:bg-[#26262B] text-[#6B6862] dark:text-[#A1A1A8]">
                   V4
                 </span>
               </div>
-              <p className="text-[10px] text-[var(--text-muted)] leading-none hidden sm:block">
-                Legal Intelligence Platform
+              <p className="text-[10px] text-[#6B6862] dark:text-[#787882] leading-none hidden xl:block font-medium">
+                AI-powered legal intelligence for everyone.
               </p>
             </div>
           </Link>
 
-          {/* Primary Navigation Links */}
+          {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-1">
-            {primaryNavLinks.map((link) => {
+            {navLinks.map((link) => {
               const isActive =
                 link.href === "/"
                   ? pathname === "/"
-                  : pathname.startsWith(link.href);
+                  : !link.href.includes("#") && pathname.startsWith(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
                     isActive
-                      ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-900 shadow-2xs"
-                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-secondary)]/80"
+                      ? "bg-[#EFE9DE] dark:bg-[#23232A] text-[#171717] dark:text-[#F5F5F5] font-semibold border border-[#DED8CD] dark:border-[#32323A]"
+                      : "text-[#6B6862] dark:text-[#A1A1A8] hover:text-[#171717] dark:hover:text-[#F5F5F5] hover:bg-[#EAE5DA]/60 dark:hover:bg-[#1D1D22]"
                   }`}
                 >
                   <span>{link.label}</span>
                   {link.badge && (
-                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-[#F5F1FD] dark:bg-purple-950/60 text-[#7C3AED] dark:text-purple-300 border border-[#DDD2FA] dark:border-purple-800">
                       {link.badge}
                     </span>
                   )}
@@ -133,96 +133,96 @@ export function Navbar() {
           </nav>
 
           {/* Right Controls */}
-          <div className="flex items-center gap-2">
-            {/* Global Command Palette Trigger (Cmd+K) */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* Search ⌘K */}
             <button
               onClick={() => {
                 window.dispatchEvent(new CustomEvent("open-command-palette"));
               }}
-              className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--border)]/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs transition-colors cursor-pointer"
-              title="Search documents, cases & actions (⌘K / Ctrl+K)"
+              className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#DED8CD] dark:border-[#26262B] bg-[#F4F0E8] dark:bg-[#1D1D22] hover:bg-[#EFE9DE] text-[#6B6862] hover:text-[#171717] text-xs transition-colors cursor-pointer"
+              title="Search documents, cases & actions (⌘K)"
             >
-              <Search className="w-3.5 h-3.5 text-[var(--text-muted)]" />
-              <span className="text-[11px] text-[var(--text-muted)]">Search</span>
-              <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-[var(--surface)] text-[var(--text-muted)] rounded border border-[var(--border)]">
+              <Search className="w-3.5 h-3.5 text-[#8C8880]" />
+              <span className="text-[11px]">Search</span>
+              <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-[#FBF9F5] dark:bg-[#151518] text-[#8C8880] rounded border border-[#DED8CD] dark:border-[#26262B]">
                 ⌘K
               </kbd>
             </button>
 
-            {/* Talk to LegalSaathi Voice Button with Gradient */}
+            {/* Voice Assistant */}
             <button
               onClick={() => setVoiceOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold shadow-xs hover:shadow-md transition-all cursor-pointer"
-              title="Talk to LegalSaathi (Hindi/English Voice Assistance)"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#DED8CD] dark:border-[#26262B] bg-[#F4F0E8] dark:bg-[#1D1D22] hover:bg-[#EFE9DE] text-[#171717] dark:text-[#F5F5F5] text-xs font-medium transition-all cursor-pointer"
+              title="Speak in Indian regional languages"
             >
-              <Mic className="w-3.5 h-3.5 text-pink-200" />
-              <span className="hidden md:inline">Voice Assistant</span>
+              <Mic className="w-3.5 h-3.5 text-[#7C3AED]" />
+              <span className="hidden sm:inline text-[11px]">Voice</span>
             </button>
 
             {/* Dark Mode Toggle */}
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--border)]/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
-              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              className="p-2 rounded-full border border-[#DED8CD] dark:border-[#26262B] bg-[#F4F0E8] dark:bg-[#1D1D22] text-[#6B6862] hover:text-[#171717] transition-colors cursor-pointer"
+              title={isDark ? "Switch to Warm Ivory" : "Switch to Dark Mode"}
             >
-              {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-purple-600" />}
+              {isDark ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-[#6B6862]" />}
             </button>
 
-            {/* Notification Bell Dropdown */}
+            {/* Notifications */}
             <div className="relative">
               <button
                 onClick={() => setNotifsOpen(!notifsOpen)}
-                className="p-2 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--border)]/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)] relative cursor-pointer"
+                className="p-2 rounded-full border border-[#DED8CD] dark:border-[#26262B] bg-[#F4F0E8] dark:bg-[#1D1D22] text-[#6B6862] hover:text-[#171717] relative cursor-pointer"
                 title="Notifications"
               >
-                <Bell className="w-4 h-4" />
+                <Bell className="w-3.5 h-3.5" />
                 {notifications.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#D95C55] text-white text-[8px] font-bold flex items-center justify-center">
                     {notifications.length}
                   </span>
                 )}
               </button>
 
               {notifsOpen && (
-                <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xl p-4 space-y-3 z-50">
-                  <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">
-                    <span className="text-xs font-bold text-[var(--text-primary)]">Notifications & Deadlines</span>
-                    <span className="text-[10px] text-[var(--text-muted)]">{notifications.length} unread</span>
+                <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-[#FBF9F5] dark:bg-[#151518] border border-[#DED8CD] dark:border-[#26262B] shadow-xl p-4 space-y-3 z-50">
+                  <div className="flex items-center justify-between pb-2 border-b border-[#DED8CD] dark:border-[#26262B]">
+                    <span className="text-xs font-bold text-[#171717] dark:text-[#F5F5F5]">Statutory Deadlines & Alerts</span>
+                    <span className="text-[10px] text-[#6B6862]">{notifications.length} unread</span>
                   </div>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {notifications.map((n) => (
                       <div
                         key={n.id}
-                        className="p-2.5 rounded-xl bg-[var(--surface-secondary)] border border-[var(--border)] text-xs space-y-1"
+                        className="p-2.5 rounded-xl bg-[#F4F0E8] dark:bg-[#1D1D22] border border-[#DED8CD] dark:border-[#26262B] text-xs space-y-1"
                       >
                         <div className="flex items-center justify-between">
-                          <strong className="text-[var(--text-primary)] text-[11px] font-semibold">{n.title}</strong>
+                          <strong className="text-[#171717] dark:text-[#F5F5F5] text-[11px] font-semibold">{n.title}</strong>
                           <span
                             className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${
                               n.severity === "high"
-                                ? "bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300"
-                                : "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300"
+                                ? "bg-[#FAEDED] text-[#D95C55]"
+                                : "bg-[#FAF4E6] text-[#C98A16]"
                             }`}
                           >
                             {n.severity}
                           </span>
                         </div>
-                        <p className="text-[11px] text-[var(--text-secondary)] leading-tight">{n.message}</p>
+                        <p className="text-[11px] text-[#6B6862] leading-tight">{n.message}</p>
                       </div>
                     ))}
                   </div>
-                  <div className="pt-2 text-center border-t border-[var(--border)] flex items-center justify-between text-[11px]">
+                  <div className="pt-2 text-center border-t border-[#DED8CD] dark:border-[#26262B] flex items-center justify-between text-[11px]">
                     <Link
                       href="/dashboard"
                       onClick={() => setNotifsOpen(false)}
-                      className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
+                      className="text-[#4F46E5] hover:underline font-semibold"
                     >
                       View All Deadlines →
                     </Link>
                     <Link
                       href="/privacy"
                       onClick={() => setNotifsOpen(false)}
-                      className="text-[var(--text-muted)] hover:underline"
+                      className="text-[#6B6862] hover:underline"
                     >
                       Privacy Settings
                     </Link>
@@ -231,16 +231,22 @@ export function Navbar() {
               )}
             </div>
 
-            {/* Profile Button with Gradient Avatar */}
+            {/* Sign in Button */}
             <button
               onClick={() => setProfileOpen(true)}
-              className="flex items-center gap-1.5 p-1 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--border)]/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
-              title="Profile & Settings"
+              className="text-xs font-semibold text-[#6B6862] dark:text-[#A1A1A8] hover:text-[#171717] dark:hover:text-[#F5F5F5] px-2.5 py-1.5 cursor-pointer hidden sm:block transition-colors"
             >
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 text-white text-[11px] font-bold flex items-center justify-center shadow-xs">
-                RS
-              </div>
+              Sign in
             </button>
+
+            {/* Primary Get Started Button (Prompt #5) */}
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#171717] dark:bg-[#F5F5F5] hover:bg-[#2B2B2B] dark:hover:bg-[#E5E5E5] text-[#FBF9F5] dark:text-[#171717] text-xs font-semibold shadow-xs hover:shadow-sm transition-all group cursor-pointer"
+            >
+              <span>Get Started</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
           </div>
         </div>
       </header>
