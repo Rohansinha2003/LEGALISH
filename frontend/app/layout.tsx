@@ -55,7 +55,7 @@ export default function RootLayout({
     <html lang="en" className={`${outfit.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-150">
         <Navbar />
-        <main className="flex-1 pb-16 md:pb-0">{children}</main>
+        <main className="flex-1 flex flex-col min-h-0 w-full">{children}</main>
         <Footer />
         <MobileBottomNav />
         <CommandPalette />

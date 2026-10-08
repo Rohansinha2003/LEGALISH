@@ -1,6 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function Footer() {
+  const pathname = usePathname();
+
+  // Hide large footer in the full-screen Document Analysis Studio
+  if (pathname?.startsWith("/analyze/")) {
+    return null;
+  }
+
   return (
     <footer className="bg-[#171717] text-[#D4D0C7] border-t border-[#26262B] transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
