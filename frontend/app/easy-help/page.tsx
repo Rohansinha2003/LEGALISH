@@ -230,7 +230,7 @@ export default function EasyLegalHelpPage() {
               {/* Spoken Paragraph with High Legibility */}
               <div className="p-6 rounded-2xl bg-amber-50/70 border border-amber-200">
                 <p className="text-base sm:text-lg text-[#1A2B49] font-serif leading-relaxed">
-                  "{response.spoken_reply_text}"
+                  &ldquo;{response.spoken_reply_text}&rdquo;
                 </p>
               </div>
 

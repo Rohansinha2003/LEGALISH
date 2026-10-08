@@ -16,6 +16,10 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   const [results, setResults] = useState<GlobalSearchResult["results"] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const openModal = () => {
+    setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
   // Keyboard shortcut listener (Cmd+K / Ctrl+K & Escape)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -32,10 +36,6 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, onClose]);
-
-  const openModal = () => {
-    setTimeout(() => inputRef.current?.focus(), 50);
-  };
 
   useEffect(() => {
     if (open) {

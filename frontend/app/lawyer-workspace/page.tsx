@@ -46,10 +46,6 @@ export default function LawyerWorkspacePage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<{ action: string; content: string } | null>(null);
 
-  useEffect(() => {
-    loadDashboard();
-  }, []);
-
   async function loadDashboard() {
     setLoading(true);
     try {
@@ -61,6 +57,10 @@ export default function LawyerWorkspacePage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
 
   async function handleSignReview() {
     setSigning(true);

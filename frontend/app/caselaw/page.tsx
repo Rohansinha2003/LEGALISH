@@ -59,10 +59,18 @@ export default function CaseLawPage() {
   const [temporalResult, setTemporalResult] = useState<TemporalLawResult | null>(null);
   const [loadingTemporal, setLoadingTemporal] = useState(false);
 
-  // Load initial search on mount
-  useEffect(() => {
-    handleSearch();
-  }, []);
+  async function handleSelectJudgment(judgment: JudgmentItem) {
+    setSelectedJudgment(judgment);
+    setLoadingSummary(true);
+    try {
+      const sum = await v4Api.getJudgmentSummary(judgment.id);
+      setSummary(sum);
+    } catch (err) {
+      console.error("Failed to fetch summary", err);
+    } finally {
+      setLoadingSummary(false);
+    }
+  }
 
   async function handleSearch() {
     setLoadingSearch(true);
@@ -79,18 +87,10 @@ export default function CaseLawPage() {
     }
   }
 
-  async function handleSelectJudgment(judgment: JudgmentItem) {
-    setSelectedJudgment(judgment);
-    setLoadingSummary(true);
-    try {
-      const sum = await v4Api.getJudgmentSummary(judgment.id);
-      setSummary(sum);
-    } catch (err) {
-      console.error("Failed to fetch summary", err);
-    } finally {
-      setLoadingSummary(false);
-    }
-  }
+  // Load initial search on mount
+  useEffect(() => {
+    handleSearch();
+  }, []);
 
   async function handleCompare() {
     if (!compareIdA || !compareIdB) {

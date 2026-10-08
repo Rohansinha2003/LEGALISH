@@ -228,7 +228,7 @@ export default function PricingPage() {
                     {/* Features list */}
                     <div className="space-y-2.5 pt-2">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-[#706E6B]">
-                        What's Included:
+                        What&apos;s Included:
                       </span>
                       <ul className="space-y-2 text-xs text-[#55524E]">
                         {plan.features.map((feat, i) => (

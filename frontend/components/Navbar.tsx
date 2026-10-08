@@ -21,11 +21,6 @@ import { privacyV3Api, NotificationItem } from "@/lib/api";
 export function Navbar() {
   const pathname = usePathname();
 
-  // Hide global navbar in full-screen Document Analysis Studio
-  if (pathname?.startsWith("/analyze/")) {
-    return null;
-  }
-
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifsOpen, setNotifsOpen] = useState(false);
@@ -76,6 +71,11 @@ export function Navbar() {
       localStorage.setItem("theme", "light");
     }
   };
+
+  // Hide global navbar in full-screen Document Analysis Studio
+  if (pathname?.startsWith("/analyze/")) {
+    return null;
+  }
 
   const navLinks = [
     { href: "/upload", label: "Product" },

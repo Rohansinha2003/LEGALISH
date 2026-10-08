@@ -218,7 +218,7 @@ export function VoiceFirstModal({ open, onClose }: VoiceFirstModalProps) {
                 }}
                 className="px-2.5 py-1 rounded-lg bg-[#F3EDE3] hover:bg-[#EAE2D5] text-[11px] text-[#1A2B49] transition-colors cursor-pointer"
               >
-                "{prompt}"
+                &ldquo;{prompt}&rdquo;
               </button>
             ))}
           </div>

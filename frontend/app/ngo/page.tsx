@@ -38,10 +38,6 @@ export default function NgoWorkspacePage() {
   ]);
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
-  useEffect(() => {
-    loadNgoData();
-  }, []);
-
   async function loadNgoData() {
     setLoading(true);
     try {
@@ -53,6 +49,10 @@ export default function NgoWorkspacePage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    loadNgoData();
+  }, []);
 
   function handleUploadDoc(e: React.FormEvent) {
     e.preventDefault();

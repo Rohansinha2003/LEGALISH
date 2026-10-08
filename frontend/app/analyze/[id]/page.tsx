@@ -10,7 +10,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   Languages,
-  BookOpen,
   Sparkles,
   Layers,
   UserCheck,

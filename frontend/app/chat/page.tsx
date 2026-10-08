@@ -200,7 +200,7 @@ function ChatContent() {
           confidence: "high",
           is_high_risk: false,
           found_in_document: true,
-          conversation_id: "conv-" + Date.now(),
+          conversation_id: conversationId || "conv-general",
         };
       }
 

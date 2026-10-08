@@ -8,13 +8,12 @@ import { ProfileModal } from "./ProfileModal";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   // Hide mobile nav in full-screen Document Analysis Studio
   if (pathname?.startsWith("/analyze/")) {
     return null;
   }
-
-  const [profileOpen, setProfileOpen] = useState(false);
 
   const tabs = [
     { href: "/", label: "Home", icon: Home },

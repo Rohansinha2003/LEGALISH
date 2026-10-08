@@ -256,7 +256,7 @@ export function CommandPalette({ isOpen: propIsOpen, onClose: propOnClose }: Com
         <div className="flex-1 overflow-y-auto p-2 space-y-4">
           {filteredItems.length === 0 ? (
             <div className="py-12 text-center text-slate-400 text-xs">
-              No matching actions or documents found for "{query}".
+              No matching actions or documents found for &ldquo;{query}&rdquo;.
             </div>
           ) : (
             categories.map((cat) => {
